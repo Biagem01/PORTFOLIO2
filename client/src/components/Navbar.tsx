@@ -43,7 +43,7 @@ const Navbar = () => {
           onClick={() => scrollToSection("hero")}
           className="text-base font-medium tracking-tight hover:text-primary transition-colors px-4 py-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/50"
         >
-          your name
+          Biagio Cubisino
         </button>
       </motion.div>
 

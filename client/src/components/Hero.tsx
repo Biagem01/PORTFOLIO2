@@ -1,105 +1,72 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
-import { useRef } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 const Hero = () => {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "70%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.3, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    element?.scrollIntoView({ behavior: "smooth" });
+    const el = document.getElementById(id);
+    el?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <section ref={ref} className="h-screen relative overflow-hidden flex items-center justify-center">
-      {/* Background Image with Parallax */}
-      <motion.div 
-        style={{ y, scale }}
-        className="absolute inset-0 z-0"
+    <section className="min-h-screen flex items-center px-6">
+      <motion.div
+        className="max-w-5xl"
+        initial={{ opacity: 0, y: 25 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9 }}
       >
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1920&h=1080&fit=crop')",
-          }}
-        />
-        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" />
-      </motion.div>
-
-      {/* Content */}
-      <motion.div 
-        style={{ opacity }}
-        className="relative z-10 text-center px-6 max-w-5xl"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
+        {/* Title */}
+        <motion.h1
+          className="text-5xl md:text-6xl font-light leading-tight mb-12"
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2 }}
+          transition={{ duration: 0.9, delay: 0.2 }}
         >
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-display font-bold mb-6 tracking-tight">
-            Ciao, sono
-            <br />
-            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              [Nome]
-            </span>
-          </h1>
-        </motion.div>
+          Hi, I’m Biagio.<br />
+          I design and build digital experiences.
+        </motion.h1>
 
+        {/* Subtitle 1 */}
         <motion.p
-          className="text-xl md:text-3xl text-foreground/80 mb-12 font-light tracking-wide"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-xl md:text-2xl text-foreground/80 max-w-3xl mb-6 leading-relaxed"
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
+          transition={{ duration: 0.9, delay: 0.35 }}
         >
-          Developer & Creative Designer
+          Developer with a passion for clean interfaces, smooth interactions
+          and meaningful products.
         </motion.p>
 
-        <motion.div
-          className="flex items-center justify-center gap-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
+        {/* Subtitle 2 */}
+        <motion.p
+          className="text-xl md:text-2xl text-foreground/70 max-w-3xl mb-12 leading-relaxed"
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.45 }}
         >
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-foreground/60 hover:text-foreground transition-colors"
-          >
-            <Github className="h-6 w-6" />
-          </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-foreground/60 hover:text-foreground transition-colors"
-          >
-            <Linkedin className="h-6 w-6" />
-          </a>
-          <a
-            href="mailto:hello@example.com"
-            className="text-foreground/60 hover:text-foreground transition-colors"
-          >
-            <Mail className="h-6 w-6" />
-          </a>
-        </motion.div>
+          Currently focused on crafting modern web apps and experimenting with
+          AI-driven user experiences.
+        </motion.p>
 
-        <motion.button
-          onClick={() => scrollToSection("about")}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-foreground/60 hover:text-foreground transition-colors"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
+        {/* Buttons */}
+        <motion.div
+          className="flex flex-wrap gap-4"
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.55 }}
         >
-          <ArrowDown className="h-8 w-8" />
-        </motion.button>
+          <Button variant="outline" size="lg" onClick={() => scrollToSection("projects")}>
+            Projects
+          </Button>
+
+          <Button variant="outline" size="lg" onClick={() => scrollToSection("about")}>
+            About Me
+          </Button>
+
+          <Button asChild variant="outline" size="lg">
+            <a href="/resume.pdf" target="_blank">Resume</a>
+          </Button>
+        </motion.div>
       </motion.div>
     </section>
   );
