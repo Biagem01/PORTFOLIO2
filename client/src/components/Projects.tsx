@@ -1,7 +1,6 @@
-
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -37,10 +36,53 @@ const Projects = () => {
   ];
 
   return (
-    <section id="projects" className="relative">
-      {projects.map((project) => (
-        <ProjectSection key={project.title} project={project} />
-      ))}
+    <section id="projects" className="relative bg-background">
+      {/* Sezione introduttiva "My Projects" */}
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 relative py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center max-w-3xl"
+        >
+          <h2 className="text-5xl md:text-7xl font-bold mb-6">
+            My Projects
+          </h2>
+          <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+            Here is a collection of selected projects that I designed and built for real people.
+          </p>
+        </motion.div>
+
+        {/* Indicatore di scroll */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="absolute bottom-12 flex flex-col items-center gap-2"
+        >
+          <span className="text-sm text-muted-foreground">Scroll to explore</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+          >
+            <ChevronDown className="h-6 w-6 text-muted-foreground" data-testid="icon-scroll-indicator" />
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* Container per progetti con scroll corretto */}
+      <div className="relative">
+        {projects.map((project, index) => (
+          <ProjectSection 
+            key={project.title} 
+            project={project} 
+            index={index}
+            totalProjects={projects.length}
+          />
+        ))}
+      </div>
     </section>
   );
 };
@@ -53,61 +95,95 @@ interface ProjectSectionProps {
     tags: string[];
     image: string;
   };
+  index: number;
+  totalProjects: number;
 }
 
-const ProjectSection = ({ project }: ProjectSectionProps) => {
+const ProjectSection = ({ project, index, totalProjects }: ProjectSectionProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
 
-  // Card compare subito all’inizio
-  const opacity = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
-  const y = useTransform(scrollYProgress, [0, 1], [20, 0]);
-  const bgY = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  // Effetto parallasse per lo sfondo - più pronunciato
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+
+  // Opacità della card che sfuma leggermente
+  const cardOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.7, 1],
+    [1, 1, 0.8]
+  );
+
+  // Border radius che aumenta leggermente durante lo scroll
+  const borderRadius = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [0, 16]
+  );
 
   return (
-    <div ref={ref} className="relative w-full h-screen">
-      {/* Sfondo sticky */}
-      <motion.div
-        className="sticky top-0 w-full h-screen -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url(${project.image})`, backgroundSize: "cover", backgroundPosition: "center", }}
-      />
+    <div 
+      ref={ref} 
+      className="h-screen relative"
+    >
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <motion.div
+          className="relative h-full w-full"
+          style={{ 
+            borderRadius,
+          }}
+        >
+          {/* Sfondo con parallasse - rimane a dimensione piena */}
+          <motion.div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${project.image})`,
+              y: backgroundY,
+              scale: 1.1,
+            }}
+          >
+            {/* Overlay scuro per migliorare leggibilità */}
+            <div className="absolute inset-0 bg-black/40" />
+          </motion.div>
 
-      {/* Card sopra l’immagine */}
-       <motion.div
-        className="absolute inset-0 flex items-center justify-center px-6"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }} // appare sia scroll giù che su
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        <div className="max-w-5xl w-full backdrop-blur-xl bg-background/80 dark:bg-background/80 p-10 rounded-xl border border-border/20">
-          <p className="text-sm font-semibold text-primary mb-1 uppercase tracking-wider">
-            {project.subtitle}
-          </p>
-          <h3 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
-            {project.title}
-          </h3>
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl">
-            {project.description}
-          </p>
+          {/* Contenuto del progetto */}
+          <div className="relative h-full flex items-center justify-center px-6 py-20">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              style={{ opacity: cardOpacity }}
+              className="max-w-5xl w-full backdrop-blur-xl bg-background/90 dark:bg-background/90 p-8 md:p-12 rounded-2xl border border-border/30 shadow-2xl"
+            >
+              <p className="text-sm font-semibold text-primary mb-2 uppercase tracking-wider" data-testid={`text-subtitle-${index}`}>
+                {project.subtitle}
+              </p>
+              <h3 className="text-4xl md:text-6xl font-bold leading-tight mb-6" data-testid={`text-title-${index}`}>
+                {project.title}
+              </h3>
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mb-6" data-testid={`text-description-${index}`}>
+                {project.description}
+              </p>
 
-          <div className="flex flex-wrap gap-2 mt-4">
-            {project.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="px-4 py-2 text-sm font-medium">
-                {tag}
-              </Badge>
-            ))}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {project.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="px-4 py-2 text-sm font-medium" data-testid={`badge-tag-${tag.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+
+              <Button size="lg" className="group gap-2" data-testid={`button-view-project-${index}`}>
+                View Project Details
+                <ExternalLink className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </motion.div>
           </div>
-
-          <Button size="lg" className="group gap-2 mt-6">
-            View Project Details
-            <ExternalLink className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 };
