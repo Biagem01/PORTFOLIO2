@@ -46,7 +46,7 @@ const Projects = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center max-w-3xl"
         >
-          <h2 className="text-5xl md:text-7xl font-bold mb-6">
+          <h2 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
             My Projects
           </h2>
           <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
@@ -82,6 +82,28 @@ const Projects = () => {
             totalProjects={projects.length}
           />
         ))}
+      </div>
+
+      {/* Sezione finale con View All Projects */}
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 relative py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center"
+        >
+          <h3 className="text-3xl md:text-4xl font-bold mb-4">
+            Interested in seeing more?
+          </h3>
+          <p className="text-lg text-muted-foreground mb-8">
+            Check out all my projects and case studies
+          </p>
+          <Button size="lg" className="group gap-2">
+            View All Projects
+            <ExternalLink className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </motion.div>
       </div>
     </section>
   );
@@ -149,36 +171,40 @@ const ProjectSection = ({ project, index, totalProjects }: ProjectSectionProps) 
           </motion.div>
 
           {/* Contenuto del progetto */}
-          <div className="relative h-full flex items-center justify-center px-6 py-20">
+          <div className="relative h-full flex items-center justify-start px-6 md:px-12 lg:px-20 py-20">
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -100, y: 50, scale: 0.85, filter: "blur(20px)" }}
+              whileInView={{ opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)" }}
               viewport={{ once: false, amount: 0.3 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
               style={{ opacity: cardOpacity }}
-              className="max-w-5xl w-full backdrop-blur-xl bg-background/90 dark:bg-background/90 p-8 md:p-12 rounded-2xl border border-border/30 shadow-2xl"
+              className="max-w-md w-full backdrop-blur-xl bg-background/40 dark:bg-background/60 p-6 md:p-8 rounded-xl border border-border/20 shadow-2xl"
             >
-              <p className="text-sm font-semibold text-primary mb-2 uppercase tracking-wider" data-testid={`text-subtitle-${index}`}>
+              <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider" data-testid={`text-subtitle-${index}`}>
                 {project.subtitle}
               </p>
-              <h3 className="text-4xl md:text-6xl font-bold leading-tight mb-6" data-testid={`text-title-${index}`}>
+              <h3 className="text-2xl md:text-3xl font-bold leading-tight mb-3 tracking-tight" data-testid={`text-title-${index}`}>
                 {project.title}
               </h3>
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mb-6" data-testid={`text-description-${index}`}>
+              <p className="text-sm md:text-base text-muted-foreground/90 leading-relaxed mb-5" data-testid={`text-description-${index}`}>
                 {project.description}
               </p>
 
-              <div className="flex flex-wrap gap-2 mb-8">
+              <div className="flex flex-wrap gap-2 mb-5">
                 {project.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="px-4 py-2 text-sm font-medium" data-testid={`badge-tag-${tag.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <Badge key={tag} variant="outline" className="px-2.5 py-1 text-xs font-normal rounded-full backdrop-blur-sm bg-background/30 border-border/30" data-testid={`badge-tag-${tag.toLowerCase().replace(/\s+/g, '-')}`}>
                     {tag}
                   </Badge>
                 ))}
               </div>
 
-              <Button size="lg" className="group gap-2" data-testid={`button-view-project-${index}`}>
-                View Project Details
-                <ExternalLink className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              <Button 
+                variant="outline" 
+                className="group gap-2 px-4 py-2 bg-background/50 hover:bg-background/80 border-border/40 hover:border-foreground/20 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:scale-105" 
+                data-testid={`button-view-project-${index}`}
+              >
+                <span className="text-sm font-semibold">View Project Details</span>
+                <ExternalLink className="h-4 w-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-300" />
               </Button>
             </motion.div>
           </div>
