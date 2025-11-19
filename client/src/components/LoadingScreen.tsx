@@ -20,9 +20,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
       if (currentProgress >= 100) {
         clearInterval(timer);
-        setTimeout(() => {
-          onComplete();
-        }, 500);
+        setTimeout(onComplete, 500);
       }
     }, interval);
 
@@ -33,25 +31,20 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
     <motion.div
       initial={{ opacity: 1 }}
       animate={{ opacity: progress >= 100 ? 0 : 1 }}
-      transition={{ duration: 0.5, delay: progress >= 100 ? 0.3 : 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
+      transition={{ duration: 0.6 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black"
       style={{ pointerEvents: progress >= 100 ? "none" : "auto" }}
     >
+      {/* ---- EFFETTO BIANCO CHE AVANZA ---- */}
       <motion.div
-        className="absolute inset-0 bg-black dark:bg-black"
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 1 - (progress / 100) }}
-        transition={{ duration: 0.2, ease: "linear" }}
-      />
-
-      <motion.div
+        className="absolute inset-0 bg-white"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: progress / 100 }}
-        transition={{ duration: 0.2, ease: "linear" }}
+        transition={{ duration: 0.25, ease: "linear" }}
         style={{ originX: 0 }}
-        className="absolute inset-0 bg-background"
       />
 
+      {/* ---- CONTENUTO ---- */}
       <div className="relative w-full max-w-2xl px-8 z-10">
         <div className="flex flex-col items-center gap-8">
           <div className="text-center">
@@ -61,35 +54,37 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               transition={{ duration: 0.6 }}
               className="text-6xl md:text-8xl font-bold mb-4"
               style={{
-                color: progress < 50 ? 'white' : 'hsl(var(--foreground))'
+                color: progress < 50 ? "white" : "black",
               }}
             >
               {progress}
-              <span 
+              <span
                 style={{
-                  color: progress < 50 ? 'rgba(255, 255, 255, 0.5)' : 'hsl(var(--muted-foreground))'
+                  color: progress < 50 ? "rgba(255,255,255,0.6)" : "gray",
                 }}
               >
                 %
               </span>
             </motion.div>
+
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg tracking-wider"
               style={{
-                color: progress < 50 ? 'rgba(255, 255, 255, 0.7)' : 'hsl(var(--muted-foreground))'
+                color: progress < 50 ? "rgba(255,255,255,0.7)" : "gray",
               }}
             >
               LOADING
             </motion.p>
           </div>
 
-          <div 
+          <div
             className="w-full h-1 rounded-full overflow-hidden"
             style={{
-              backgroundColor: progress < 50 ? 'rgba(255, 255, 255, 0.2)' : 'hsl(var(--muted))'
+              backgroundColor:
+                progress < 50 ? "rgba(255,255,255,0.25)" : "#ddd",
             }}
           >
             <motion.div
@@ -98,9 +93,10 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="h-full rounded-full"
               style={{
-                background: progress < 50 
-                  ? 'linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))' 
-                  : 'linear-gradient(to right, hsl(var(--foreground)), hsl(var(--primary)))'
+                background:
+                  progress < 50
+                    ? "white"
+                    : "black",
               }}
             />
           </div>

@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import AllProjects from "./pages/AllProjects";
 import NotFound from "./pages/NotFound";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 function Router() {
   return (
@@ -29,11 +30,23 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <TooltipProvider>
-          {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
           <CustomCursor />
-          <Router />
-          <Toaster />
-          <Sonner />
+
+          {/* Loader prima di tutto */}
+          {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
+
+          {/* Tutto il resto viene montato solo dopo il loader */}
+          {!isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Router />
+              <Toaster />
+              <Sonner />
+            </motion.div>
+          )}
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
