@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { ExternalLink, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 
 const Projects = () => {
   const projects = [
@@ -99,10 +100,12 @@ const Projects = () => {
           <p className="text-lg text-muted-foreground mb-8">
             Check out all my projects and case studies
           </p>
-          <Button size="lg" className="group gap-2">
+          <Link href="/AllProjects">
+          <Button size="lg" className="group gap-2 cursor-pointer">
             View All Projects
             <ExternalLink className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
+        </Link>
         </motion.div>
       </div>
     </section>
