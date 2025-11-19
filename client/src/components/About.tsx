@@ -70,8 +70,8 @@ const About = () => {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-4xl md:text-6xl font-display font-bold mb-12">
-          <TextRevealScroll text="Chi sono" speed={0.01} />
+        <h2 className="text-4xl md:text-6xl font-display  font-bold mb-12">
+          <TextRevealScroll text="Chi sono" className="font-display" speed={0.01} />
         </h2>
 
         <div className="space-y-6 text-lg md:text-xl text-foreground/80 font-light leading-relaxed">

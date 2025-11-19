@@ -6,9 +6,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CustomCursor from "@/components/CustomCursor";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import Index from "./pages/Index";
 import AllProjects from "./pages/AllProjects";
 import NotFound from "./pages/NotFound";
+import { useState } from "react";
 
 function Router() {
   return (
@@ -21,10 +23,13 @@ function Router() {
 }
 
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <TooltipProvider>
+          {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
           <CustomCursor />
           <Router />
           <Toaster />

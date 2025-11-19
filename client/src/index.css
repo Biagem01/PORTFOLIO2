@@ -115,6 +115,21 @@ All colors MUST be HSL.
     font-weight: 700;
   }
 
+
+h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
+  font-family: inherit !important;
+  font-weight: inherit;
+}
+
+  
+
+  p {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 200;
+  }
+
+
+
   html {
     scroll-behavior: smooth;
   }
