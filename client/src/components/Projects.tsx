@@ -47,7 +47,7 @@ const Projects = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center max-w-3xl"
         >
-          <h2 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+          <h2 className="text-5xl md:text-7xl font-display font-bold mb-6 tracking-tight">
             My Projects
           </h2>
           <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
@@ -94,7 +94,7 @@ const Projects = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center"
         >
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">
+          <h3 className="text-3xl md:text-4xl font-display font-bold mb-4">
             Interested in seeing more?
           </h3>
           <p className="text-lg text-muted-foreground mb-8">
@@ -186,7 +186,7 @@ const ProjectSection = ({ project, index, totalProjects }: ProjectSectionProps) 
               <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider" data-testid={`text-subtitle-${index}`}>
                 {project.subtitle}
               </p>
-              <h3 className="text-2xl md:text-3xl font-bold leading-tight mb-3 tracking-tight" data-testid={`text-title-${index}`}>
+              <h3 className="text-2xl md:text-3xl font-display font-bold leading-tight mb-3 tracking-tight" data-testid={`text-title-${index}`}>
                 {project.title}
               </h3>
               <p className="text-sm md:text-base text-muted-foreground/90 leading-relaxed mb-5" data-testid={`text-description-${index}`}>
