@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
 All colors MUST be HSL.
 */
 
@@ -53,6 +53,8 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+   
   }
 
   .dark {
@@ -107,28 +109,21 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+
+   h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 700;
   }
 
 
-h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
-  font-family: inherit !important;
-  font-weight: inherit;
-}
-
-  
 
   p {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 200;
   }
-
-
 
   html {
     scroll-behavior: smooth;
@@ -148,16 +143,21 @@ h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
   .hover-elevate {
     @apply transition-all duration-300;
   }
-  
+
   .hover-elevate:hover {
     @apply -translate-y-1;
   }
-  
+
   .active-elevate-2 {
     @apply transition-all duration-150;
   }
-  
+
   .active-elevate-2:active {
     @apply scale-95;
   }
+}
+
+.font-chi-sono {
+  font-family: 'Space Grotesk', system-ui, sans-serif !important;
+  font-weight: 400 !important;
 }
