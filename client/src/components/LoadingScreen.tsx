@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function LoadingScreen({
   onComplete,
@@ -46,6 +47,7 @@ export default function LoadingScreen({
     <div
       id="loader-wrapper"
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black text-white overflow-hidden transition-opacity duration-700"
+      data-cursor="hide"
     >
       {/* GRID BACKGROUND */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
@@ -53,48 +55,95 @@ export default function LoadingScreen({
           className="absolute inset-0"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)
+              radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0),
+              radial-gradient(circle at 23px 23px, rgba(255,255,255,0.06) 1px, transparent 0)
             `,
-            backgroundSize: "46px 46px",
-            animation: "gridMove 18s linear infinite",
+            backgroundSize: "48px 48px",
+            animation: "gridMove 24s linear infinite",
           }}
         />
       </div>
 
-      {/* LOGO */}
-      <div className="flex items-center justify-center select-none">
-        <div
-          className="w-32 h-32 flex items-center justify-center text-5xl font-extrabold tracking-wider"
-          style={{
-            color: "#f3f3f3",
-            animation: "logoFloat 4s ease-in-out infinite",
-          }}
-        >
-          BC
+        {/* CIRCULAR LOADER */}
+      {/* CIRCULAR LOADER */}
+     {/* CIRCULAR LOADER */}
+      <div className="flex flex-col items-center justify-center gap-10 select-none" data-cursor="hide">
+        <div className="relative">
+          {/* Rotating ring */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+            className="w-44 h-44 rounded-full border border-white/12"
+          />
+
+          {/* Inner circle */}
+          <div className="absolute inset-3 rounded-full bg-black flex items-center justify-center border border-white/12">
+            <div className="text-center">
+              <p className="uppercase text-[0.62rem] tracking-[0.5em] text-white/40">
+                Portfolio
+              </p>
+              <p className="text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight text-[hsl(var(--scroll-indicator))]">
+                BC
+              </p>
+              <p className="text-[0.62rem] tracking-[0.35em] text-white/35 uppercase">
+                Studio
+              </p>
+            </div>
+          </div>
+
+          {/* Progress arc */}
+          <svg
+            className="absolute inset-0 w-44 h-44"
+            viewBox="0 0 120 120"
+            role="img"
+            aria-label="Loading progress"
+          >
+            <circle
+              cx="60"
+              cy="60"
+              r="52"
+              className="fill-none stroke-white/12"
+              strokeWidth="1.5"
+            />
+            <motion.circle
+              cx="60"
+              cy="60"
+              r="52"
+              className="fill-none stroke-[hsl(var(--scroll-indicator))]"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeDasharray="326"
+              strokeDashoffset={326 - (326 * progress) / 100}
+              animate={{ strokeDashoffset: 326 - (326 * progress) / 100 }}
+              transition={{ ease: "easeOut", duration: 0.35 }}
+            />
+          </svg>
+     
         </div>
+      
+
+     {/* LOADING TEXT + PERCENT */}
+        {!showStart && (
+          <div className="text-center space-y-2 uppercase tracking-[0.35em]">
+            <p className="text-[13px] text-white/60">Loading</p>
+            <p className="text-[12px] text-white/40">{progress}%</p>
+          </div>
+        )}
+
+        {/* START BUTTON */}
+        {showStart && (
+          <motion.button
+            onClick={handleStart}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="px-10 py-3 rounded-full border border-[hsl(var(--scroll-indicator))] bg-black text-[hsl(var(--scroll-indicator))] text-sm tracking-[0.3em] uppercase hover:bg-[hsl(var(--scroll-indicator))] hover:text-black transition-all duration-250"
+          >
+            Start
+          </motion.button>
+        )}
       </div>
 
-      {/* LOADING TEXT + PERCENT */}
-      {!showStart && (
-        <div className="mt-10 text-center space-y-2 uppercase tracking-widest">
-          <p className="text-[13px] text-neutral-400">Loading…</p>
-          <p className="text-[12px] text-neutral-500">{progress}%</p>
-        </div>
-      )}
-
-      {/* START BUTTON */}
-      {showStart && (
-        <button
-          onClick={handleStart}
-          className="mt-12 px-8 py-3 border border-neutral-700 text-neutral-200 text-sm tracking-widest uppercase hover:bg-white hover:text-black transition-all duration-300"
-          style={{
-            animation: "fadeIn 0.8s ease-out forwards",
-          }}
-        >
-          Start
-        </button>
-      )}
 
       {/* ANIMATIONS */}
       <style>{`

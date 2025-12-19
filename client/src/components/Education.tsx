@@ -1,4 +1,12 @@
-import { motion, Variants, Transition, Easing } from "framer-motion";
+import {
+  motion,
+  Variants,
+  Transition,
+  Easing,
+  useScroll,
+  useTransform,
+  useMotionTemplate,
+} from "framer-motion";
 import { useRef } from "react";
 
 interface EducationItem {
@@ -11,6 +19,21 @@ interface EducationItem {
 
 const Education = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start 80%", "end 20%"],
+  });
+
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
+  const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
+  const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
+  const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
+  const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
+  const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
+
+  const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
+  const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
 
   const educationItems: EducationItem[] = [
     {
@@ -80,34 +103,78 @@ const Education = () => {
       ref={containerRef}
       className="relative bg-background min-h-screen flex items-center justify-center px-6 md:px-12 lg:px-20 py-20"
     >
-      <div className="max-w-6xl w-full flex items-start gap-12 md:gap-20 lg:gap-32">
+       <div className="max-w-6xl w-full flex flex-col lg:flex-row items-start gap-12 md:gap-20 lg:gap-32">
+        <div className="lg:hidden w-full relative">
+          <motion.div
+            style={{ opacity: haloOpacity, scale: haloScale }}
+            className="pointer-events-none absolute inset-x-1/2 top-[-8px] h-28 w-[22rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
+          />
+
+          <motion.h2
+            data-cursor="big"
+            style={{
+              opacity: titleOpacity,
+              filter: blurFilter,
+              y: titleLift,
+              letterSpacing: letterSpacingPx,
+            }}
+            className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight text-[hsl(var(--scroll-indicator))] flex gap-3"
+          >
+            <span className="text-[hsl(var(--scroll-indicator))]">My</span>
+            <span className="text-[hsl(var(--accent-orange))]/80">Education</span>
+          </motion.h2>
+
+          <motion.span
+            aria-hidden
+            style={{ opacity: ghostOpacity, y: titleLift }}
+            className="absolute left-0 top-1/2 -translate-y-1/2 text-5xl font-black tracking-[0.8rem] text-foreground/5 select-none"
+          >
+            MY EDUCATION
+          </motion.span>
+        </div>
         {/* Left side - MY EDUCATION sticky */}
         <motion.div
   initial={{ opacity: 0, x: -40 }}
-  whileInView={{ opacity: 1, x: 0 }}
-  viewport={{ once: true }}
-  transition={{ duration: 0.9, ease: cubicEase }}
-  className="hidden lg:flex items-start flex-shrink-0 h-full sticky top-20"
->
- <h2
-  data-cursor="big"
-  className="
-    text-2xl md:text-3xl 
-    tracking-wider uppercase 
-    flex flex-row gap-2
-    font-extrabold   /* 🔥 ORA FUNZIONA */
-  "
-  style={{ writingMode: "horizontal-tb", marginRight: "2rem" }}
->
-  <span className="text-[hsl(var(--scroll-indicator))]">
-    MY
-  </span>
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, ease: cubicEase }}
+          className="hidden lg:flex items-start flex-shrink-0 h-full sticky top-20 relative"
+        >
+          <motion.div
+            style={{ opacity: haloOpacity, scale: haloScale }}
+            className="pointer-events-none absolute -left-6 top-[-24px] h-40 w-[20rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
+          />
 
-  <span className="text-[hsl(var(--accent-orange))]/80">
-    EDUCATION
-  </span>
-</h2>
-</motion.div>
+          <motion.h2
+            data-cursor="big"
+            style={{
+              opacity: titleOpacity,
+              filter: blurFilter,
+              y: titleLift,
+              letterSpacing: letterSpacingPx,
+              writingMode: "horizontal-tb",
+              marginRight: "2rem",
+            }}
+            className="
+              text-2xl md:text-3xl 
+              tracking-wider uppercase 
+              flex flex-row gap-2
+              font-extrabold
+            "
+          >
+            <span className="text-[hsl(var(--scroll-indicator))]">MY</span>
+
+            <span className="text-[hsl(var(--accent-orange))]/80">EDUCATION</span>
+          </motion.h2>
+
+          <motion.span
+            aria-hidden
+            style={{ opacity: ghostOpacity, y: titleLift }}
+            className="absolute left-[-10px] top-1/2 -translate-y-1/2 text-4xl font-black tracking-[1rem] text-foreground/5 select-none rotate-90 origin-left"
+          >
+            MY EDUCATION
+          </motion.span>
+        </motion.div>
 
         {/* Right side - Education timeline */}
         <motion.div
@@ -247,3 +314,6 @@ const Education = () => {
 };
 
 export default Education;
+
+
+

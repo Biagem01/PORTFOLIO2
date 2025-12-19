@@ -1,4 +1,10 @@
-import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  MotionValue,
+  useMotionTemplate,
+} from "framer-motion";
 import { useRef } from "react";
 import { ArrowUpRight } from "lucide-react";
 
@@ -51,10 +57,31 @@ const projects: Project[] = [
    MAIN
 ------------------------------------------- */
 export default function Projects() {
+  const headerRef = useRef<HTMLDivElement | null>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: headerRef,
+    offset: ["start 80%", "end 20%"],
+  });
+
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
+  const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
+  const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
+  const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
+  const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
+  const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
+
+  const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
+  const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
+
   return (
     <section id="projects" className="relative bg-background">
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20 md:pb-32">
+      <div
+        ref={headerRef}
+        className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20 md:pb-32 relative overflow-visible"
+      >
         <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-end">
           {/* LEFT */}
           <div className="space-y-4">
@@ -69,19 +96,34 @@ export default function Projects() {
               Selected Work
             </motion.p>
 
-            <motion.h2
-              data-cursor="big"
-              className="text-[1.5rem] md:text-[3.5rem] lg:text-[4.5rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))]"
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              Featured{" "}
-              <span className="text-[hsl(var(--accent-orange))]/80">
-                Projects
-              </span>
-            </motion.h2>
+            <div className="relative">
+              <motion.div
+                style={{ opacity: haloOpacity, scale: haloScale }}
+                className="pointer-events-none absolute inset-x-0 top-[-12px] h-28 md:h-36 rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
+              />
+
+              <motion.h2
+                data-cursor="big"
+                style={{
+                  opacity: titleOpacity,
+                  filter: blurFilter,
+                  y: titleLift,
+                  letterSpacing: letterSpacingPx,
+                }}
+                className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4"
+              >
+                <span className="text-[hsl(var(--accent-orange))]/80">Featured</span>
+                <span className="text-[hsl(var(--scroll-indicator))]">Projects</span>
+              </motion.h2>
+
+              <motion.span
+                aria-hidden
+                style={{ opacity: ghostOpacity, y: titleLift }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-[3.5rem] md:text-[5rem] lg:text-[6rem] font-black tracking-[1.2rem] text-foreground/5 select-none"
+              >
+                FEATURED PROJECTS
+              </motion.span>
+            </div>
           </div>
 
           {/* RIGHT */}

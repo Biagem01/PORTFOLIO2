@@ -30,14 +30,7 @@ function Router() {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🔥 Il loader si nasconde quando LoadingScreen "dispare"
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2300); // deve combaciare con il tuo fadeOut finale
-
-    return () => clearTimeout(timer);
-  }, []);
+ 
 
   return (
     <QueryClientProvider client={queryClient}>
