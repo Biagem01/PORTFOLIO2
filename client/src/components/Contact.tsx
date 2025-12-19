@@ -87,12 +87,16 @@ const Contact = () => {
         >
           <h2
           className="
-            text-5xl md:text-7xl 
-           font-bold
+           text-[3rem]
+            md:text-[4.5rem]
+            lg:text-[6rem]
+            font-extrabold
+            leading-[1.05]
+            tracking-tight
               /* 🔥 aumenta la distanza tra le lettere */
             text-[hsl(var(--scroll-indicator))]
             flex items-center justify-center gap-6  /* 🔥 spazio tra le parole */
-            font-sans
+            
           "
         >
           <span className="text-[hsl(var(--accent-orange))]/80">
@@ -253,3 +257,5 @@ const Contact = () => {
 };
 
 export default Contact;
+
+

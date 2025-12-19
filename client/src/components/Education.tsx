@@ -157,7 +157,7 @@ const Education = () => {
                 >
                   <h3
                   data-cursor="big"
-                    className="text-lg md:text-xl  font-grotesk"
+                    className="text-lg md:text-xl  font-semibold"
                     data-testid={`text-education-institution-${index}`}
                   >
                     {item.institution}
@@ -181,7 +181,7 @@ const Education = () => {
                     delay: 0.35 + index * 0.2,
                     ease: cubicEase,
                   }}
-                  className="text-base md:text-lg text-primary font-semibold mb-3 f"
+                  className="text-base md:text-lg text-primary font-semibold mb-3 "
                   data-testid={`text-education-title-${index}`}
                 >
                   {item.title}
