@@ -1,111 +1,99 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
-const CustomCursor = () => {
-  const [isPointer, setIsPointer] = useState(false);
-  const [isHidden, setIsHidden] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const cursorReadyRef = useRef(false);
-
+export default function CustomCursor() {
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
 
-  const springConfig = { damping: 25, stiffness: 300 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
+  const springConfig = { damping: 20, stiffness: 180, mass: 0.3 };
+  const x = useSpring(cursorX, springConfig);
+  const y = useSpring(cursorY, springConfig);
+
+  const [variant, setVariant] = useState<
+    "default" | "small" | "big" | "hidden" | "view" | "details"
+  >("default");
 
   useEffect(() => {
-    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    if (!isDesktop) return;
-
-    setIsMounted(true);
-
-    cursorX.set(window.innerWidth / 2);
-    cursorY.set(window.innerHeight / 2);
-
-    const moveCursor = (e: MouseEvent) => {
+    const move = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
 
-      if (!cursorReadyRef.current) {
-        cursorReadyRef.current = true;
-        document.body.classList.add("custom-cursor-active");
-      }
-
       const target = e.target as HTMLElement;
-      
-      const isTextInput = 
-        target.tagName === "INPUT" || 
-        target.tagName === "TEXTAREA" ||
-        target.hasAttribute("contenteditable");
 
-      if (isTextInput) {
-        setIsPointer(false);
+      // 👉 Pagina dettagli: cursore SEMPRE arancione senza testo
+      if (target.closest("[data-cursor='details']")) {
+        setVariant("details");
         return;
       }
 
-      const isClickable = 
-        target.tagName === "A" || 
-        target.tagName === "BUTTON" ||
-        target.closest("button") !== null ||
-        target.closest("a") !== null ||
-        window.getComputedStyle(target).cursor === "pointer";
-
-      setIsPointer(isClickable);
+      if (target.closest("[data-cursor='hide']")) {
+        setVariant("hidden");
+      } else if (target.closest("[data-cursor='small']")) {
+        setVariant("small");
+      } else if (target.closest("[data-cursor='view']")) {
+        setVariant("view");
+      } else if (target.closest("[data-cursor='big']")) {
+        setVariant("big");
+      } else {
+        setVariant("default");
+      }
     };
 
-    const handleMouseEnter = () => setIsHidden(false);
-    const handleMouseLeave = () => setIsHidden(true);
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
+  }, []);
 
-    window.addEventListener("mousemove", moveCursor);
-    document.body.addEventListener("mouseenter", handleMouseEnter);
-    document.body.addEventListener("mouseleave", handleMouseLeave);
-
-    return () => {
-      document.body.classList.remove("custom-cursor-active");
-      window.removeEventListener("mousemove", moveCursor);
-      document.body.removeEventListener("mouseenter", handleMouseEnter);
-      document.body.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, [cursorX, cursorY]);
-
-  if (!isMounted || isHidden) return null;
+  const isDetails = variant === "details";
 
   return (
-    <>
-      <motion.div
-        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[9999] mix-blend-difference"
-        style={{
-          x: cursorXSpring,
-          y: cursorYSpring,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-      >
-        <motion.div
-          className="w-full h-full rounded-full border-2 border-white"
-          animate={{
-            scale: isPointer ? 1.5 : 1,
-          }}
-          transition={{ duration: 0.15 }}
-        />
-      </motion.div>
+    <motion.div
+      className="
+        pointer-events-none 
+        fixed top-0 left-0 z-[999999]
+        flex items-center justify-center
+        font-semibold uppercase tracking-widest
+      "
+      style={{
+        x,
+        y,
+        translateX: "-50%",
+        translateY: "-50%"
+      }}
+      animate={{
+        width:
+          variant === "view" ? 170 :
+          variant === "small" ? 22 :
+          variant === "big" ? 250 :
+          38,
+        height:
+          variant === "view" ? 170 :
+          variant === "small" ? 22 :
+          variant === "big" ? 250 :
+          38,
 
-      <motion.div
-        className="fixed top-0 left-0 w-2 h-2 pointer-events-none z-[9999] bg-white rounded-full mix-blend-difference"
-        style={{
-          x: cursorXSpring,
-          y: cursorYSpring,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          scale: isPointer ? 0 : 1,
-        }}
-        transition={{ duration: 0.15 }}
-      />
-    </>
+        opacity: variant === "hidden" ? 0 : 1,
+
+        borderRadius: "999px",
+
+        // 👉 SEMPRE ARANCIONE OVUNQUE
+        backgroundColor: "rgb(207,78,8)",
+
+        // 👉 SE siamo nella pagina dettagli → NO blend mode
+        // 👉 Altrimenti, effetto figo di difference
+        mixBlendMode: isDetails ? "normal" : variant === "view" ? "normal" : "difference",
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 220,
+        damping: 26,
+      }}
+    >
+      {/* Testo solo nella home → view details */}
+      {variant === "view" && !isDetails && (
+        <span className="pointer-events-none text-[14px] text-black">
+          VIEW DETAILS
+        </span>
+      )}
+    </motion.div>
   );
-};
-
-export default CustomCursor;
+}

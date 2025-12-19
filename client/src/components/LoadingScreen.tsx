@@ -1,99 +1,123 @@
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-interface LoadingScreenProps {
+export default function LoadingScreen({
+  onComplete,
+}: {
   onComplete: () => void;
-}
-
-export function LoadingScreen({ onComplete }: LoadingScreenProps) {
+}) {
   const [progress, setProgress] = useState(0);
+  const [showStart, setShowStart] = useState(false);
 
+  /* -----------------------------
+      PROGRESS BAR → 0 → 100
+  ----------------------------- */
   useEffect(() => {
-    const duration = 3500;
+    let current = 0;
+    const duration = 2000;
     const steps = 100;
     const interval = duration / steps;
 
-    let currentProgress = 0;
     const timer = setInterval(() => {
-      currentProgress += 1;
-      setProgress(currentProgress);
+      current++;
+      setProgress(current);
 
-      if (currentProgress >= 100) {
+      if (current >= 100) {
         clearInterval(timer);
-        setTimeout(onComplete, 500);
+        setTimeout(() => setShowStart(true), 400);
       }
     }, interval);
 
     return () => clearInterval(timer);
-  }, [onComplete]);
+  }, []);
 
-  const numStripes = 12;
+  /* -----------------------------
+      CLICK → EXIT LOADER
+  ----------------------------- */
+  const handleStart = () => {
+    const fade = document.getElementById("loader-wrapper");
+    if (fade) fade.classList.add("loader-fade-out");
+
+    setTimeout(() => {
+      onComplete();
+    }, 800);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 1 }}
-      animate={{ opacity: progress >= 100 ? 0 : 1 }}
-      transition={{ duration: 0.6 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black overflow-hidden"
-      style={{ pointerEvents: progress >= 100 ? "none" : "auto" }}
+    <div
+      id="loader-wrapper"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black text-white overflow-hidden transition-opacity duration-700"
     >
-      {/* Strisce orizzontali che si riempiono da sinistra a destra con delay */}
-      <div className="absolute inset-0 flex flex-col">
-        {Array.from({ length: numStripes }).map((_, index) => {
-          const delayFactor = index * 0.06;
-          const animationProgress = Math.max(0, Math.min(1, (progress - delayFactor * 100) / 35));
-
-          return (
-            <motion.div
-              key={index}
-              className="flex-1 bg-white"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: animationProgress }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              style={{ originX: 0 }}
-            />
-          );
-        })}
+      {/* GRID BACKGROUND */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)
+            `,
+            backgroundSize: "46px 46px",
+            animation: "gridMove 18s linear infinite",
+          }}
+        />
       </div>
 
-      {/* Contenuto - Testo che passa da bianco a nero */}
-      <div className="relative w-full max-w-2xl px-8 z-10">
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-center">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-2xl md:text-3xl font-bold mb-3 tracking-tight"
-            >
-              <motion.span
-                animate={{
-                  color: progress < 45 ? "#ffffff" : "#000000",
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                Biagio Cubisino
-              </motion.span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-sm tracking-[0.25em] font-light"
-            >
-              <motion.span
-                animate={{
-                  color: progress < 45 ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.4)",
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {progress}%
-              </motion.span>
-            </motion.p>
-          </div>
+      {/* LOGO */}
+      <div className="flex items-center justify-center select-none">
+        <div
+          className="w-32 h-32 flex items-center justify-center text-5xl font-extrabold tracking-wider"
+          style={{
+            color: "#f3f3f3",
+            animation: "logoFloat 4s ease-in-out infinite",
+          }}
+        >
+          BC
         </div>
       </div>
-    </motion.div>
+
+      {/* LOADING TEXT + PERCENT */}
+      {!showStart && (
+        <div className="mt-10 text-center space-y-2 uppercase tracking-widest">
+          <p className="text-[13px] text-neutral-400">Loading…</p>
+          <p className="text-[12px] text-neutral-500">{progress}%</p>
+        </div>
+      )}
+
+      {/* START BUTTON */}
+      {showStart && (
+        <button
+          onClick={handleStart}
+          className="mt-12 px-8 py-3 border border-neutral-700 text-neutral-200 text-sm tracking-widest uppercase hover:bg-white hover:text-black transition-all duration-300"
+          style={{
+            animation: "fadeIn 0.8s ease-out forwards",
+          }}
+        >
+          Start
+        </button>
+      )}
+
+      {/* ANIMATIONS */}
+      <style>{`
+        @keyframes gridMove {
+          0% { transform: translate(0,0); }
+          100% { transform: translate(40px,40px); }
+        }
+
+        @keyframes logoFloat {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+          100% { transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loader-fade-out {
+          opacity: 0 !important;
+        }
+      `}</style>
+    </div>
   );
 }

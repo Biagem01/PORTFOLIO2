@@ -2,11 +2,12 @@ import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 import { LucideX } from "lucide-react";
 export default {
- content: [
-  "./client/src/pages/**/*.{ts,tsx}",
-  "./client/src/components/**/*.{ts,tsx}",
-  "./client/src/**/*.{ts,tsx}"
-],
+  darkMode: ["class"],
+  content: [
+    "./client/src/pages/**/*.{ts,tsx}",
+    "./client/src/components/**/*.{ts,tsx}",
+    "./client/src/**/*.{ts,tsx}"
+  ],
   prefix: "",
   theme: {
     container: {
@@ -18,9 +19,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
-      },
+  sans: ['"URW Gothic"', 'sans-serif'],   // NUOVO FONT PRINCIPALE
+  display: ['"URW Gothic"', 'sans-serif'], 
+},
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

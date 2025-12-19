@@ -1,344 +1,289 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 import { useRef } from "react";
-import { ExternalLink, ChevronDown, ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
+import { ArrowUpRight } from "lucide-react";
 
-const Projects = () => {
-  const projects = [
-    {
-      title: "E-Commerce Platform",
-      subtitle: "From Idea to MVP",
-      description:
-        "Piattaforma e-commerce completa con gestione prodotti, carrello avanzato, checkout sicuro e dashboard amministrativa.",
-      tags: ["React", "TypeScript", "Stripe", "Tailwind CSS", "Node.js"],
-      image:
-        "https://images.unsplash.com/photo-1557821552-17105176677c?w=1920&h=1080&fit=crop",
-    },
-    {
-      title: "Dashboard Analytics",
-      subtitle: "Innovation & Design",
-      description:
-        "Dashboard interattiva per visualizzazione e analisi dati real-time con grafici avanzati e filtri dinamici.",
-      tags: ["Next.js", "Chart.js", "Tailwind", "API REST", "PostgreSQL"],
-      image:
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&h=1080&fit=crop",
-    },
-    {
-      title: "Social Media App",
-      subtitle: "Full UX Design Process",
-      description:
-        "Applicazione social completa con feed personalizzato, messaggistica in tempo reale e notifiche push.",
-      tags: ["React", "Firebase", "Framer Motion", "Tailwind", "WebSocket"],
-      image:
-        "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1920&h=1080&fit=crop",
-    },
-  ];
-
-  return (
-    <section id="projects" className="relative bg-background">
-      {/* Sezione introduttiva "My Projects" */}
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 relative py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center max-w-4xl"
-        >
-          <motion.p 
-            className="text-base md:text-lg text-muted-foreground mb-6 font-light tracking-wide"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            Portfolio
-          </motion.p>
-          <h2 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight leading-none">
-            My Projects
-          </h2>
-          <p className="text-xl md:text-2xl text-foreground/70 leading-relaxed font-light">
-            Una collezione di progetti selezionati che ho progettato e sviluppato per persone reali.
-          </p>
-        </motion.div>
-
-        {/* Indicatore di scroll con animazione più fluida */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="absolute bottom-12 flex flex-col items-center gap-3"
-        >
-          <span className="text-sm text-muted-foreground font-light tracking-wide">Scroll per esplorare</span>
-          <motion.div
-            animate={{ 
-              y: [0, 12, 0],
-              opacity: [0.5, 1, 0.5]
-            }}
-            transition={{ 
-              repeat: Infinity, 
-              duration: 2, 
-              ease: "easeInOut" 
-            }}
-          >
-            <ChevronDown className="h-6 w-6 text-muted-foreground" data-testid="icon-scroll-indicator" />
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Container per progetti con scroll corretto */}
-      <div className="relative">
-        {projects.map((project, index) => (
-          <ProjectSection 
-            key={project.title} 
-            project={project} 
-            index={index}
-            totalProjects={projects.length}
-          />
-        ))}
-      </div>
-    </section>
-  );
-};
-
-interface ProjectSectionProps {
-  project: {
-    title: string;
-    subtitle: string;
-    description: string;
-    tags: string[];
-    image: string;
-  };
-  index: number;
-  totalProjects: number;
+/* -------------------------------------------
+   PROJECT DATA
+------------------------------------------- */
+interface Project {
+  title: string;
+  description: string;
+  tags: string[];
+  image: string;
+  year: string;
+  category: string;
 }
 
-const ProjectSection = ({ project, index }: ProjectSectionProps) => {
+const projects: Project[] = [
+  {
+    title: "E-Commerce Platform",
+    description:
+      "Platform progettata e sviluppata per gestire prodotti, pagamenti e dashboard professionale.",
+    tags: ["React", "TypeScript", "Stripe", "Tailwind CSS"],
+    image:
+      "https://images.unsplash.com/photo-1557821552-17105176677c?w=1920&h=1080&fit=crop",
+    year: "2024",
+    category: "Web Development",
+  },
+  {
+    title: "Analytics Dashboard",
+    description:
+      "Dashboard real-time con data visualization, filtri avanzati e animazioni dinamiche.",
+    tags: ["Next.js", "Chart.js", "PostgreSQL"],
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&h=1080&fit=crop",
+    year: "2024",
+    category: "Data Visualization",
+  },
+  {
+    title: "Social App",
+    description:
+      "App social completa con feed, gestione profili, chat in tempo reale e micro-animazioni.",
+    tags: ["React", "Firebase", "Framer Motion"],
+    image:
+      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1920&h=1080&fit=crop",
+    year: "2023",
+    category: "Mobile & Web",
+  },
+];
+
+/* -------------------------------------------
+   MAIN
+------------------------------------------- */
+export default function Projects() {
+  return (
+    <section id="projects" className="relative bg-background">
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20 md:pb-32">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-end">
+          {/* LEFT */}
+          <div className="space-y-4">
+            <motion.p
+              className="text-xs md:text-sm uppercase tracking-[0.3em] text-foreground/50"
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              data-cursor="big"
+            >
+              Selected Work
+            </motion.p>
+
+            <motion.h2
+              data-cursor="big"
+              className="text-[1.5rem] md:text-[3.5rem] lg:text-[4.5rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))]"
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              Featured{" "}
+              <span className="text-[hsl(var(--accent-orange))]/80">
+                Projects
+              </span>
+            </motion.h2>
+          </div>
+
+          {/* RIGHT */}
+          <motion.p
+            className="text-sm md:text-base text-[hsl(var(--scroll-indicator))]/70 leading-relaxed font-light max-w-md md:ml-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            data-cursor="big"
+          >
+            Una selezione di progetti che rappresentano il mio approccio al
+            design e allo sviluppo: pulito, funzionale, memorabile.
+          </motion.p>
+        </div>
+
+        {/* DIVIDER LINE */}
+        <motion.div
+          className="h-px bg-[hsl(var(--scroll-indicator))]/20 mt-12 md:mt-16"
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ transformOrigin: "left" }}
+        />
+      </div>
+
+      {/* FULLSCREEN PROJECT PANELS */}
+      <div className="space-y-[5vh]">
+        {projects.map((project, index) => (
+          <ProjectPanel key={project.title} project={project} index={index} />
+        ))}
+      </div>
+
+      {/* BOTTOM SPACING */}
+      <div className="h-32" />
+    </section>
+  );
+}
+
+/* -------------------------------------------
+   FULLSCREEN PROJECT PANEL
+------------------------------------------- */
+function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  
+
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start start", "end start"],
+    offset: ["start 85%", "end 15%"],
   });
 
-  const { scrollYProgress: cardProgress } = useScroll({
-    target: cardRef,
-    offset: ["start end", "end start"],
-  });
+  // Animazioni basate sullo scroll
+  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0.92, 1, 1, 0.92]);
+  const imageX = useTransform(scrollYProgress, [0, 1], [120, 0]);
 
-  // Effetto parallasse per lo sfondo - PIÙ ACCENTUATO
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const backgroundScale = useTransform(scrollYProgress, [0, 1], [1.2, 1.4]);
-
-  // Opacità della card che sfuma più gradualmente
-  const cardOpacity = useTransform(
+  // Mask reveal animation
+  const maskPosition: MotionValue<string> = useTransform(
     scrollYProgress,
-    [0, 0.6, 1],
-    [1, 1, 0.6]
+    [0, 0.5],
+    ["0%", "100%"]
   );
 
-  // Scala della card durante lo scroll
-  const cardScale = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    [1, 1, 0.95]
-  );
+  // Content animations
+  const titleY = useTransform(scrollYProgress, [0.1, 0.4], [60, 0]);
+  const titleOpacity = useTransform(scrollYProgress, [0.1, 0.4], [0, 1]);
+  const descY = useTransform(scrollYProgress, [0.15, 0.45], [40, 0]);
+  const descOpacity = useTransform(scrollYProgress, [0.15, 0.45], [0, 1]);
 
-  // Rotazione leggera della card
-  const cardRotate = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [0, -2]
-  );
-
-  // Border radius che aumenta durante lo scroll
-  const borderRadius = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [0, 24]
-  );
-
-  // Blur effect che aumenta
-  const blur = useTransform(
-    scrollYProgress,
-    [0, 0.8, 1],
-    [0, 0, 4]
-  );
-
-  // Animazione della card in entrata
-  const cardY = useTransform(cardProgress, [0, 0.4, 0.8], [100, 0, -50]);
+  const projectNumber = String(index + 1).padStart(2, "0");
 
   return (
-    <div 
-      ref={ref} 
-      className="h-screen relative"
+    <motion.div
+      ref={ref}
+      style={{ opacity, scale }}
+      className="h-[100vh] w-full relative flex items-center justify-center"
     >
-      <div className="sticky top-0 h-screen overflow-hidden">
+      {/* CLICKABLE FULLSCREEN AREA */}
+      <div
+        className="absolute inset-0 cursor-pointer"
+        data-cursor="view"
+        onClick={() =>
+          (window.location.href = `/project/${project.title
+            .toLowerCase()
+            .replace(/\s+/g, "-")}`)
+        }
+      >
+        {/* IMAGE WITH MASK REVEAL */}
         <motion.div
-          className="relative h-full w-full"
-          style={{ 
-            borderRadius,
-          }}
+          className="absolute inset-0 overflow-hidden will-change-transform"
+          style={
+            {
+              "--pos": maskPosition,
+              WebkitMaskImage:
+                "linear-gradient(90deg, black 0%, black var(--pos), transparent calc(var(--pos) + 8%))",
+              maskImage:
+                "linear-gradient(90deg, black 0%, black var(--pos), transparent calc(var(--pos) + 8%))",
+            } as React.CSSProperties
+          }
         >
-          {/* Sfondo con parallasse PIÙ ACCENTUATO */}
-          <motion.div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${project.image})`,
-              y: backgroundY,
-              scale: backgroundScale,
-            }}
-          >
-            {/* Overlay scuro graduale per migliorare leggibilità */}
-            <motion.div 
-              className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/70"
-              style={{
-                opacity: useTransform(scrollYProgress, [0, 0.5], [0.4, 0.7]),
-              }}
-            />
-            
-            {/* Gradient overlay dal basso */}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-transparent" />
-          </motion.div>
+          <motion.img
+            src={project.image}
+            alt={project.title}
+            className="w-full h-full object-cover will-change-transform"
+            style={{ x: imageX }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+          />
 
-          {/* Contenuto del progetto - CARD MIGLIORATA */}
-          <div className="relative h-full flex items-center justify-start px-6 md:px-12 lg:px-20 py-20">
-            <motion.div
-              ref={cardRef}
-              initial={{ opacity: 0, x: -150, scale: 0.7, filter: "blur(40px)", rotateY: -30 }}
-              whileInView={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)", rotateY: 0 }}
-              viewport={{ once: false, amount: 0.2 }}
-              transition={{ 
-                duration: 1.6, 
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              style={{ 
-                opacity: cardOpacity,
-                scale: cardScale,
-                rotateZ: cardRotate,
-                y: cardY,
-                filter: `blur(${blur}px)`,
-              }}
-              className="max-w-lg w-full relative group perspective"
-            >
-              {/* Glow effect dietro la card - PIÙ VISIBILE */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-primary/40 via-accent/30 to-primary/40 rounded-2xl blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              {/* Card principale - PIÙ VISIBILE */}
-              <div className="relative backdrop-blur-3xl bg-gradient-to-br from-background/60 via-background/50 to-background/40 p-8 md:p-10 rounded-2xl border border-white/20 shadow-2xl overflow-hidden group-hover:shadow-3xl transition-shadow duration-500">
-                {/* Gradient decorativo interno */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl" />
-                
-                {/* Contenuto */}
-                <div className="relative z-10">
-                  {/* Subtitle con animazione */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                  >
-                    <p className="text-xs font-medium text-primary mb-4 uppercase tracking-widest flex items-center gap-2" data-testid={`text-subtitle-${index}`}>
-                      <span className="inline-block w-8 h-px bg-primary/50"></span>
-                      {project.subtitle}
-                    </p>
-                  </motion.div>
-
-                  {/* Title */}
-                  <motion.h3 
-                    className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6 tracking-tight bg-gradient-to-br from-foreground via-foreground to-foreground/80 bg-clip-text" 
-                    data-testid={`text-title-${index}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                  >
-                    {project.title}
-                  </motion.h3>
-
-                  {/* Description */}
-                  <motion.p 
-                    className="text-base md:text-lg text-foreground/80 leading-relaxed mb-8 font-light" 
-                    data-testid={`text-description-${index}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                  >
-                    {project.description}
-                  </motion.p>
-
-                  {/* Tags */}
-                  <motion.div 
-                    className="flex flex-wrap gap-2 mb-8"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                  >
-                    {project.tags.map((tag, tagIndex) => (
-                      <motion.div
-                        key={tag}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: false }}
-                        transition={{ duration: 0.3, delay: 0.5 + tagIndex * 0.05 }}
-                        whileHover={{ scale: 1.05, y: -2 }}
-                      >
-                        <Badge 
-                          variant="outline" 
-                          className="px-4 py-1.5 text-xs font-medium rounded-full backdrop-blur-sm bg-background/20 border-white/20 hover:bg-background/30 hover:border-white/30 transition-all duration-300" 
-                          data-testid={`badge-tag-${tag.toLowerCase().replace(/\s+/g, '-')}`}
-                        >
-                          {tag}
-                        </Badge>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-
-                  {/* Button */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                  >
-                    <Button 
-                      variant="default" 
-                      className="group gap-3 px-6 py-6 bg-foreground/90 hover:bg-foreground text-background border-0 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:scale-105 rounded-xl" 
-                      data-testid={`button-view-project-${index}`}
-                    >
-                      <span className="text-sm font-semibold tracking-wide">Vedi Dettagli Progetto</span>
-                      <motion.div
-                        animate={{ 
-                          x: [0, 4, 0],
-                          y: [0, -4, 0]
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </motion.div>
-                    </Button>
-                  </motion.div>
-                </div>
-
-                {/* Decorative corner */}
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-accent/5 to-transparent rounded-tl-2xl" />
-              </div>
-            </motion.div>
-          </div>
+          {/* GRADIENT OVERLAYS */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--project-overlay))]/80 via-[hsl(var(--project-overlay))]/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--project-overlay))]/60 via-transparent to-transparent" />
         </motion.div>
-      </div>
-    </div>
-  );
-};
 
-export default Projects;
+        {/* LIGHT BEAM EFFECT */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/5 via-transparent to-transparent"
+          style={{ opacity: 0.2, x: -150, rotate: -15 }}
+        />
+      </div>
+
+      {/* PROJECT NUMBER - DECORATIVE */}
+      <motion.span
+        className="absolute top-1/2 -translate-y-1/2 right-8 md:right-16 text-[8rem] md:text-[14rem] lg:text-[18rem] font-extralight select-none pointer-events-none"
+        style={{ 
+          opacity: titleOpacity,
+          WebkitTextStroke: '2px hsl(var(--accent-orange) / 0.6)',
+          color: 'transparent',
+          textShadow: '0 0 60px hsl(var(--accent-orange) / 0.3)'
+        }}
+      >
+        {projectNumber}
+      </motion.span>
+
+      {/* CONTENT OVERLAY */}
+      <motion.div
+      
+        className="absolute bottom-16 md:bottom-24 left-8 md:left-16 lg:left-24 z-20 max-w-2xl"
+        style={{ opacity: titleOpacity, y: titleY }}
+      >
+        {/* CATEGORY & YEAR */}
+        <motion.div
+          className="flex items-center gap-4 mb-4"
+          style={{ opacity: descOpacity, y: descY }}
+        >
+          <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-[hsl(var(--accent-orange))]/80">
+            {project.category}
+          </span>
+          <span className="w-8 h-px bg-[hsl(var(--scroll-indicator))]/40" />
+          <span className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--scroll-indicator))]/60">
+            {project.year}
+          </span>
+        </motion.div>
+
+        {/* TITLE */}
+        <h3
+          className="
+            text-4xl md:text-6xl lg:text-7xl 
+            text-[hsl(var(--scroll-indicator))] tracking-tight 
+            leading-[1.05]
+            drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]
+            font-extrabold
+          "
+          data-cursor="view"
+        >
+          {project.title}
+        </h3>
+
+        {/* DESCRIPTION */}
+        <motion.p
+          className="mt-5 text-base md:text-lg max-w-lg leading-relaxed text-[hsl(var(--scroll-indicator))]/80 font-light"
+          style={{ opacity: descOpacity, y: descY }}
+        >
+          {project.description}
+        </motion.p>
+
+        {/* TAGS */}
+        <motion.div
+          className="flex flex-wrap mt-6 gap-2"
+          style={{ opacity: descOpacity }}
+        >
+          {project.tags.map((tag) => (
+            <span
+              key={tag}
+              className="
+                px-4 py-2 
+                text-xs 
+                uppercase tracking-[0.15em]
+                rounded-full 
+                bg-white/5 
+                border border-white/10 
+                backdrop-blur-md 
+                text-[hsl(var(--scroll-indicator))]/90
+                font-medium
+              "
+            >
+              {tag}
+            </span>
+          ))}
+        </motion.div>
+
+        
+      </motion.div>
+    </motion.div>
+  );
+}

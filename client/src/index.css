@@ -1,50 +1,64 @@
+
+
+@import url("https://fonts.googleapis.com/css2?family=URW+Gothic:wght@300;400;500;700;900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
-All colors MUST be HSL.
-*/
+
+
+
+/* -----------------------------------------
+   DESIGN SYSTEM COMPLETAMENTE OTTIMIZZATO
+   Stile MINH PHAM + il tuo stile attuale
+   Tutti i colori sono HSL
+----------------------------------------- */
 
 @layer base {
   :root {
+    /* BACKGROUND */
     --background: 0 0% 100%;
     --background-rgb: 255, 255, 255;
-    --foreground: 240 10% 10%;
 
+    /* 🎨 TESTO (versione MinhPham) */
+    --foreground: 0 0% 100%;         
+    --card-foreground: 40 25% 92%;
+    --popover-foreground: 40 25% 92%;
+    --secondary-foreground: 40 25% 92%;
+    --muted-foreground: 40 20% 80%;
+    --accent-orange: 16 100% 50%;
+
+    /* SURFACES */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
-
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
-
-    --primary: 250 70% 60%;
-    --primary-foreground: 0 0% 100%;
-
     --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 10%;
-
     --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
 
+    /* ACCENTI */
+    --primary: 12 100% 56%;
+    --primary-foreground: 0 0% 100%;
     --accent: 340 80% 65%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
+    /* BORDI */
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 250 70% 60%;
+    --ring: 12 100% 56%;
 
+    /* RADII */
     --radius: 1rem;
 
-    /* Custom Portfolio Variables */
-    --shadow-soft: 0 10px 40px -15px hsl(250 70% 60% / 0.2);
+    /* CUSTOM */
+    --shadow-soft: 0 10px 40px -15px hsl(12 100% 56% / 0.2);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --gradient-start: 240 10% 98%;
     --gradient-end: 250 60% 96%;
 
+    /* Sidebar */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -54,43 +68,51 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-   
+    /* Scroll indicator (oro/beige come MinhPham) */
+    --scroll-indicator: 38 33% 57%;
+    
+    /* Project card */
+    --project-overlay: 240 10% 3%;
   }
 
+  /* -----------------------------------------
+     DARK MODE — Stile MinhPham
+  ----------------------------------------- */
   .dark {
     --background: 240 10% 5%;
     --background-rgb: 13, 13, 15;
-    --foreground: 240 10% 98%;
 
+    /* 🎨 TESTO COLORE MINHPHAM (dark mode) */
+    --foreground: 0 0% 100%;        
+    --card-foreground: 40 25% 92%;
+    --popover-foreground: 40 25% 92%;
+    --secondary-foreground: 40 25% 92%;
+    --muted-foreground: 40 20% 80%;
+
+    /* SURFACES */
     --card: 240 10% 8%;
-    --card-foreground: 240 10% 98%;
-
     --popover: 240 10% 8%;
-    --popover-foreground: 240 10% 98%;
-
-    --primary: 250 70% 60%;
-    --primary-foreground: 0 0% 100%;
-
     --secondary: 240 10% 15%;
-    --secondary-foreground: 240 10% 98%;
-
     --muted: 240 10% 15%;
-    --muted-foreground: 240 5% 65%;
 
+    /* ACCENTI */
+    --primary: 12 100% 56%;
+    --primary-foreground: 0 0% 100%;
     --accent: 340 80% 65%;
     --accent-foreground: 0 0% 100%;
 
+    /* BORDI */
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 240 10% 18%;
     --input: 240 10% 18%;
-    --ring: 250 70% 60%;
+    --ring: 12 100% 56%;
 
-    --shadow-soft: 0 10px 40px -15px hsl(250 70% 60% / 0.3);
+    --shadow-soft: 0 10px 40px -15px hsl(12 100% 56% / 0.3);
     --gradient-start: 240 10% 8%;
     --gradient-end: 250 60% 12%;
 
+    /* Sidebar */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -99,37 +121,42 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Scroll indicator */
+    --scroll-indicator: 38 33% 57%;
+    
+    /* Project card */
+    --project-overlay: 240 10% 3%;
   }
 }
 
+/* -----------------------------------------
+   TYPOGRAPHY & BASE STYLES
+----------------------------------------- */
 @layer base {
   * {
+    font-family: "URW Gothic", sans-serif !important;
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
+ body {
+  @apply bg-background text-foreground;
+  font-family: "URW Gothic", sans-serif;
+}
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: "URW Gothic", sans-serif;
+  font-weight: 900; /* oppure 900 se vuoi extra bold */
+}
 
-   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight: 700;
-  }
-
-
-
-  p {
-    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight: 200;
-  }
+p {
+  font-family: "URW Gothic", sans-serif;
+}
 
   html {
     scroll-behavior: smooth;
   }
 
-  /* Smooth scroll enhancements */
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
@@ -138,7 +165,9 @@ All colors MUST be HSL.
   }
 }
 
-/* Custom utility classes for hover effects */
+/* -----------------------------------------
+   UTILITIES
+----------------------------------------- */
 @layer utilities {
   .hover-elevate {
     @apply transition-all duration-300;
@@ -155,9 +184,110 @@ All colors MUST be HSL.
   .active-elevate-2:active {
     @apply scale-95;
   }
+  
+  /* Project number stroke text */
+  .text-stroke {
+    -webkit-text-stroke: 1px hsl(var(--scroll-indicator) / 0.3);
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .text-stroke-hover {
+    -webkit-text-stroke: 1px hsl(var(--accent-orange) / 0.6);
+    -webkit-text-fill-color: transparent;
+  }
 }
 
+/* Font custom */
 .font-chi-sono {
   font-family: 'Space Grotesk', system-ui, sans-serif !important;
   font-weight: 400 !important;
+}
+
+/* -----------------------------------------
+   CURSORE MINH PHAM
+----------------------------------------- */
+
+[data-cursor="big"] {
+  transition: color 0.25s ease-out, opacity 0.25s ease-out;
+}
+
+.cursor-minh {
+  background: #f7f7f7;
+  border-radius: 50%;
+  mix-blend-mode: difference;
+  position: fixed !important;
+  pointer-events: none !important;
+  z-index: 9999999 !important;
+}
+
+html, body, #root {
+  isolation: isolate;
+}
+
+/* Orange accent for bold text in hero */
+.font-bold, .font-semibold {
+  color: hsl(var(--accent-orange)) / 80;
+}
+
+/* -----------------------------------------
+   PROJECT SECTION ANIMATIONS
+----------------------------------------- */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes line-expand {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--scroll-indicator) / 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.line-expand {
+  transform-origin: left;
+  animation: line-expand 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Project image hover effect */
+.project-image-container {
+  overflow: hidden;
+}
+
+.project-image-container img {
+  transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.project-image-container:hover img {
+  transform: scale(1.08);
 }

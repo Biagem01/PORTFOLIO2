@@ -6,18 +6,22 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CustomCursor from "@/components/CustomCursor";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import LoadingScreen from "@/components/LoadingScreen";
+import { ScrollIndicator } from "@/components/ScrollIndicator";
 import Index from "./pages/Index";
 import AllProjects from "./pages/AllProjects";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import ProjectPage from "./pages/ProjectPage";
+
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Index} />
       <Route path="/projects" component={AllProjects} />
+      <Route path="/project/:slug" component={ProjectPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -26,22 +30,32 @@ function Router() {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
+  // 🔥 Il loader si nasconde quando LoadingScreen "dispare"
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2300); // deve combaciare con il tuo fadeOut finale
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
         <TooltipProvider>
           <CustomCursor />
 
-          {/* Loader prima di tutto */}
-          {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
+         {isLoading && (
+  <LoadingScreen onComplete={() => setIsLoading(false)} />
+)}
 
-          {/* Tutto il resto viene montato solo dopo il loader */}
           {!isLoading && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
             >
+              <ScrollIndicator />
               <Router />
               <Toaster />
               <Sonner />
