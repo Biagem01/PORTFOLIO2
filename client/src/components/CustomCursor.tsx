@@ -75,8 +75,8 @@ export default function CustomCursor() {
 
         borderRadius: "999px",
 
-        // 👉 SEMPRE ARANCIONE OVUNQUE
-        backgroundColor: "rgb(207,78,8)",
+        // 👉 Colore brand aggiornato
+        backgroundColor: "rgb(235, 89, 57)",
 
         // 👉 SE siamo nella pagina dettagli → NO blend mode
         // 👉 Altrimenti, effetto figo di difference
