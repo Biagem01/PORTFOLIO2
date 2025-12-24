@@ -25,11 +25,16 @@ const Contact = () => {
   // 👉 SCROLL SU TUTTA LA SEZIONE
   const { scrollYProgress } = useScroll({
     target: sectionRef,
+
     offset: ["start 80%", "end 20%"],
+
+     offset: ["start 80%", "end 20%"],
+
   });
 
   // 👉 Linea che cresce fino al 100% dell'altezza reale
   const lineScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
+
   const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
   const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
@@ -41,6 +46,19 @@ const Contact = () => {
   const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
   const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
 
+const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
+  const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
+  const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
+  const underlineScale = useTransform(scrollYProgress, [0.35, 0.7], [0, 1]);
+  const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
+  const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
+  const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
+
+  
+
+  const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
+  const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -62,11 +80,19 @@ const Contact = () => {
       ref={sectionRef}
       className="relative py-32 px-6 bg-black text-white overflow-visible"
     >
+
       <div className="max-w-7xl mx-auto relative">
 
         {/* ⭐ LINEA ANIMATA (assoluta, parte sotto il titolo) */}
         {/* ⭐ LINEA ANIMATA COMPLETA */}
         <motion.div
+
+       <div className="max-w-7xl mx-auto relative">
+
+        {/* ⭐ LINEA ANIMATA (assoluta, parte sotto il titolo) */}
+        {/* ⭐ LINEA ANIMATA COMPLETA */}
+   <motion.div
+
           style={{
             scaleY: lineScale,
             originY: "top",
@@ -103,6 +129,7 @@ const Contact = () => {
             className="pointer-events-none absolute inset-x-1/2 top-4 h-48 w-[32rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
           />
 
+
           <motion.h2
             style={{
               opacity: titleOpacity,
@@ -137,6 +164,46 @@ const Contact = () => {
             GET IN TOUCH
           </motion.span>
 
+
+          <motion.div
+            style={{ opacity: haloOpacity, scale: haloScale }}
+            className="pointer-events-none absolute inset-x-1/2 top-4 h-48 w-[32rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
+          />
+
+          <motion.h2
+            style={{
+              opacity: titleOpacity,
+              filter: blurFilter,
+              y: titleLift,
+              letterSpacing: letterSpacingPx,
+            }}
+            className="
+              relative
+              text-[3rem]
+              md:text-[4.5rem]
+              lg:text-[6rem]
+              font-extrabold
+              leading-[1.05]
+              tracking-tight
+              text-[hsl(var(--scroll-indicator))]
+              flex items-center justify-center gap-6
+            "
+          >
+            <span className="text-[hsl(var(--accent-orange))]/80">GET</span>
+
+            <span className="text-[hsl(var(--scroll-indicator))]">IN</span>
+
+
+           <span className="text-[hsl(var(--accent-orange))]/80">TOUCH</span>
+          </motion.h2>
+
+          <motion.span
+            style={{ opacity: ghostOpacity, y: titleLift }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[6.25rem] md:text-[7.5rem] lg:text-[9rem] font-black tracking-[1.2rem] text-white/5 select-none"
+            aria-hidden
+          >
+            GET IN TOUCH
+          </motion.span>
           <p className="text-lg font-light text-white/50 max-w-3xl mx-auto mt-6">
             Se vuoi parlare di un progetto, una collaborazione o un'idea —
             sono sempre disponibile.

@@ -103,7 +103,11 @@ const Education = () => {
       ref={containerRef}
       className="relative bg-background min-h-screen flex items-center justify-center px-6 md:px-12 lg:px-20 py-20"
     >
+
       <div className="max-w-6xl w-full flex flex-col lg:flex-row items-start gap-12 md:gap-20 lg:gap-32">
+
+       <div className="max-w-6xl w-full flex flex-col lg:flex-row items-start gap-12 md:gap-20 lg:gap-32">
+
         <div className="lg:hidden w-full relative">
           <motion.div
             style={{ opacity: haloOpacity, scale: haloScale }}
@@ -134,7 +138,11 @@ const Education = () => {
         </div>
         {/* Left side - MY EDUCATION sticky */}
         <motion.div
+
           initial={{ opacity: 0, x: -40 }}
+
+  initial={{ opacity: 0, x: -40 }}
+
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease: cubicEase }}
@@ -314,3 +322,6 @@ const Education = () => {
 };
 
 export default Education;
+
+
+
