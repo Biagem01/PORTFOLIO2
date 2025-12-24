@@ -30,17 +30,18 @@ function Router() {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
+
  
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
         <TooltipProvider>
-          <CustomCursor />
+          {!isLoading && <CustomCursor />}
 
-         {isLoading && (
-  <LoadingScreen onComplete={() => setIsLoading(false)} />
-)}
+          {isLoading && (
+            <LoadingScreen onComplete={() => setIsLoading(false)} />
+          )}
 
           {!isLoading && (
             <motion.div
