@@ -92,7 +92,7 @@ const Footer = () => {
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
-                className="rounded-full px-6 py-6 text-base bg-foreground text-background hover:bg-foreground/80"
+                className="rounded-full px-7 py-6 text-base font-semibold border border-foreground bg-black text-[hsl(var(--scroll-indicator))] transition-all hover:bg-[hsl(var(--scroll-indicator))] hover:text-black hover:border-[hsl(var(--scroll-indicator))]"
                 asChild
               >
                 <a href="mailto:tuaemail@example.com" data-testid="cta-email">
@@ -103,7 +103,7 @@ const Footer = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full px-6 py-6 text-base border-dashed border-foreground/30 hover:border-foreground/60"
+                className="rounded-full px-7 py-6 text-base font-semibold border border-foreground/60 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:text-[hsl(var(--scroll-indicator))] hover:bg-black/60"
                 asChild
               >
                 <a href="#contact" data-testid="cta-contact">
@@ -159,7 +159,7 @@ const Footer = () => {
                       key={link.name}
                       variant="outline"
                       size="sm"
-                      className="gap-2 rounded-full border-border/70 hover:border-[hsl(var(--scroll-indicator))]/60 hover:text-[hsl(var(--scroll-indicator))]"
+                      className="gap-2 rounded-full border border-border/70 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:bg-[hsl(var(--scroll-indicator))] hover:text-black"
                       asChild
                     >
                       <a
