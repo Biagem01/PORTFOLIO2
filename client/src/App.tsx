@@ -30,6 +30,7 @@ function Router() {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">

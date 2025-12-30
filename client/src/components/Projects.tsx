@@ -4,9 +4,14 @@ import {
   useTransform,
   MotionValue,
   useMotionTemplate,
+
   useInView,
 } from "framer-motion";
 import { useEffect, useRef } from "react";
+
+} from "framer-motion";
+import { useRef } from "react";
+
 import { ArrowUpRight } from "lucide-react";
 
 /* -------------------------------------------
@@ -65,7 +70,11 @@ export default function Projects() {
   const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
   const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+
   const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [16, 10, 4]);
+
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
+
   const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
   const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
   const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
@@ -108,10 +117,17 @@ export default function Projects() {
                   y: titleLift,
                   letterSpacing: letterSpacingPx,
                 }}
+
                 className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4 uppercase"
               >
                 <span className="text-[hsl(var(--accent-orange))]/85">FEATURED</span>
                 <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
+
+                className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4"
+              >
+                <span className="text-[hsl(var(--accent-orange))]/80">Featured</span>
+                <span className="text-[hsl(var(--scroll-indicator))]">Projects</span>
+
               </motion.h2>
 
               <motion.span
