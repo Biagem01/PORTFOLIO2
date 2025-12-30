@@ -9,8 +9,7 @@ import {
 } from "framer-motion";
 import { useEffect, useRef } from "react";
 
-} from "framer-motion";
-import { useRef } from "react";
+
 
 import { ArrowUpRight } from "lucide-react";
 
