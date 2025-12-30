@@ -1,5 +1,12 @@
-import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
-import { useRef } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  MotionValue,
+  useMotionTemplate,
+  useInView,
+} from "framer-motion";
+import { useEffect, useRef } from "react";
 import { ArrowUpRight } from "lucide-react";
 
 /* -------------------------------------------
@@ -9,7 +16,7 @@ interface Project {
   title: string;
   description: string;
   tags: string[];
-  image: string;
+  video: string;
   year: string;
   category: string;
 }
@@ -20,8 +27,7 @@ const projects: Project[] = [
     description:
       "Platform progettata e sviluppata per gestire prodotti, pagamenti e dashboard professionale.",
     tags: ["React", "TypeScript", "Stripe", "Tailwind CSS"],
-    image:
-      "https://images.unsplash.com/photo-1557821552-17105176677c?w=1920&h=1080&fit=crop",
+    video: "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
     year: "2024",
     category: "Web Development",
   },
@@ -30,8 +36,7 @@ const projects: Project[] = [
     description:
       "Dashboard real-time con data visualization, filtri avanzati e animazioni dinamiche.",
     tags: ["Next.js", "Chart.js", "PostgreSQL"],
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&h=1080&fit=crop",
+    video: "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
     year: "2024",
     category: "Data Visualization",
   },
@@ -40,8 +45,7 @@ const projects: Project[] = [
     description:
       "App social completa con feed, gestione profili, chat in tempo reale e micro-animazioni.",
     tags: ["React", "Firebase", "Framer Motion"],
-    image:
-      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1920&h=1080&fit=crop",
+    video: "https://storage.googleapis.com/coverr-main/mp4/Bridge.mp4",
     year: "2023",
     category: "Mobile & Web",
   },
@@ -51,10 +55,31 @@ const projects: Project[] = [
    MAIN
 ------------------------------------------- */
 export default function Projects() {
+  const headerRef = useRef<HTMLDivElement | null>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: headerRef,
+    offset: ["start 80%", "end 20%"],
+  });
+
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
+  const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
+  const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [16, 10, 4]);
+  const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
+  const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
+  const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
+
+  const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
+  const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
+
   return (
     <section id="projects" className="relative bg-background">
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20 md:pb-32">
+      <div
+        ref={headerRef}
+        className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20 md:pb-32 relative overflow-visible"
+      >
         <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-end">
           {/* LEFT */}
           <div className="space-y-4">
@@ -69,24 +94,39 @@ export default function Projects() {
               Selected Work
             </motion.p>
 
-            <motion.h2
-              data-cursor="big"
-              className="text-[1.5rem] md:text-[3.5rem] lg:text-[4.5rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))]"
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              Featured{" "}
-              <span className="text-[hsl(var(--accent-orange))]/80">
-                Projects
-              </span>
-            </motion.h2>
+            <div className="relative">
+              <motion.div
+                style={{ opacity: haloOpacity, scale: haloScale }}
+                className="pointer-events-none absolute inset-x-0 top-[-12px] h-28 md:h-36 rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
+              />
+
+              <motion.h2
+                data-cursor="big"
+                style={{
+                  opacity: titleOpacity,
+                  filter: blurFilter,
+                  y: titleLift,
+                  letterSpacing: letterSpacingPx,
+                }}
+                className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4 uppercase"
+              >
+                <span className="text-[hsl(var(--accent-orange))]/85">FEATURED</span>
+                <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
+              </motion.h2>
+
+              <motion.span
+                aria-hidden
+                style={{ opacity: ghostOpacity, y: titleLift }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-[3.5rem] md:text-[5rem] lg:text-[6rem] font-black tracking-[1.2rem] text-foreground/5 select-none"
+              >
+                FEATURED PROJECTS
+              </motion.span>
+            </div>
           </div>
 
           {/* RIGHT */}
           <motion.p
-            className="text-sm md:text-base text-[hsl(var(--scroll-indicator))]/70 leading-relaxed font-light max-w-md md:ml-auto"
+            className="text-sm md:text-base text-foreground/65 leading-relaxed font-normal max-w-md md:ml-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -127,11 +167,27 @@ export default function Projects() {
 ------------------------------------------- */
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 85%", "end 15%"],
   });
+
+  const isInView = useInView(ref, { amount: 0.45, margin: "0px" });
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) return;
+
+    if (isInView) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isInView]);
 
   // Animazioni basate sullo scroll
   const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
@@ -182,12 +238,18 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             } as React.CSSProperties
           }
         >
-          <motion.img
-            src={project.image}
-            alt={project.title}
+          <motion.video
+            ref={videoRef}
+            src={project.video}
             className="w-full h-full object-cover will-change-transform"
             style={{ x: imageX }}
             transition={{ duration: 1.2, ease: "easeOut" }}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            disablePictureInPicture
           />
 
           {/* GRADIENT OVERLAYS */}

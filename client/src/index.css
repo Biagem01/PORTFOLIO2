@@ -27,7 +27,7 @@
     --popover-foreground: 40 25% 92%;
     --secondary-foreground: 40 25% 92%;
     --muted-foreground: 40 20% 80%;
-    --accent-orange: 16 100% 50%;
+    --accent-orange: 10.8 81.7% 57.3%; /* #EB5939 */
 
     /* SURFACES */
     --card: 0 0% 100%;
@@ -135,23 +135,23 @@
 ----------------------------------------- */
 @layer base {
   * {
-    font-family: "URW Gothic", sans-serif !important;
+    font-family: "Avant Garde", "URW Gothic", "Century Gothic", sans-serif !important;
     @apply border-border;
   }
 
- body {
-  @apply bg-background text-foreground;
-  font-family: "URW Gothic", sans-serif;
-}
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Avant Garde", "URW Gothic", "Century Gothic", sans-serif;
+  }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: "URW Gothic", sans-serif;
-  font-weight: 900; /* oppure 900 se vuoi extra bold */
-}
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Avant Garde", "URW Gothic", "Century Gothic", sans-serif;
+    font-weight: 900; /* oppure 900 se vuoi extra bold */
+  }
 
-p {
-  font-family: "URW Gothic", sans-serif;
-}
+  p {
+    font-family: "Avant Garde", "URW Gothic", "Century Gothic", sans-serif;
+  }
 
   html {
     scroll-behavior: smooth;

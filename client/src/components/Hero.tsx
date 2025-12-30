@@ -107,7 +107,7 @@ export default function Hero() {
           </span>
 
           {/* WORD 2 — ORANGE */}
-          <span className="block  text-[hsl(var(--accent-orange))]/80">
+          <span className="block" style={{ color: "#EB5939" }}>
             <TextReveal text="MODERN" delay={0.35} />
           </span>
 
@@ -117,7 +117,7 @@ export default function Hero() {
           </span>
 
           {/* WORD 4 — ORANGE */}
-          <span className="block  text-[hsl(var(--accent-orange))]/80">
+          <span className="block" style={{ color: "#EB5939" }}>
             <TextReveal text="EXPERIENCES" delay={0.75} />
           </span>
 
