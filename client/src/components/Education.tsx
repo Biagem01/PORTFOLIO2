@@ -106,7 +106,11 @@ const Education = () => {
 
       <div className="max-w-6xl w-full flex flex-col lg:flex-row items-start gap-12 md:gap-20 lg:gap-32">
 
+
+      <div className="max-w-6xl w-full flex flex-col lg:flex-row items-start gap-12 md:gap-20 lg:gap-32">
+
        <div className="max-w-6xl w-full flex flex-col lg:flex-row items-start gap-12 md:gap-20 lg:gap-32">
+
 
         <div className="lg:hidden w-full relative">
           <motion.div
@@ -141,7 +145,11 @@ const Education = () => {
 
           initial={{ opacity: 0, x: -40 }}
 
+
+          initial={{ opacity: 0, x: -40 }}
+
   initial={{ opacity: 0, x: -40 }}
+
 
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}

@@ -4,8 +4,14 @@ import {
   useTransform,
   MotionValue,
   useMotionTemplate,
+
+  useInView,
+} from "framer-motion";
+import { useEffect, useRef } from "react";
+
 } from "framer-motion";
 import { useRef } from "react";
+
 import { ArrowUpRight } from "lucide-react";
 
 /* -------------------------------------------
@@ -15,7 +21,7 @@ interface Project {
   title: string;
   description: string;
   tags: string[];
-  image: string;
+  video: string;
   year: string;
   category: string;
 }
@@ -26,8 +32,7 @@ const projects: Project[] = [
     description:
       "Platform progettata e sviluppata per gestire prodotti, pagamenti e dashboard professionale.",
     tags: ["React", "TypeScript", "Stripe", "Tailwind CSS"],
-    image:
-      "https://images.unsplash.com/photo-1557821552-17105176677c?w=1920&h=1080&fit=crop",
+    video: "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
     year: "2024",
     category: "Web Development",
   },
@@ -36,8 +41,7 @@ const projects: Project[] = [
     description:
       "Dashboard real-time con data visualization, filtri avanzati e animazioni dinamiche.",
     tags: ["Next.js", "Chart.js", "PostgreSQL"],
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&h=1080&fit=crop",
+    video: "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
     year: "2024",
     category: "Data Visualization",
   },
@@ -46,8 +50,7 @@ const projects: Project[] = [
     description:
       "App social completa con feed, gestione profili, chat in tempo reale e micro-animazioni.",
     tags: ["React", "Firebase", "Framer Motion"],
-    image:
-      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1920&h=1080&fit=crop",
+    video: "https://storage.googleapis.com/coverr-main/mp4/Bridge.mp4",
     year: "2023",
     category: "Mobile & Web",
   },
@@ -67,7 +70,11 @@ export default function Projects() {
   const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
   const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [16, 10, 4]);
+
   const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
+
   const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
   const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
   const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
@@ -110,10 +117,17 @@ export default function Projects() {
                   y: titleLift,
                   letterSpacing: letterSpacingPx,
                 }}
+
+                className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4 uppercase"
+              >
+                <span className="text-[hsl(var(--accent-orange))]/85">FEATURED</span>
+                <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
+
                 className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4"
               >
                 <span className="text-[hsl(var(--accent-orange))]/80">Featured</span>
                 <span className="text-[hsl(var(--scroll-indicator))]">Projects</span>
+
               </motion.h2>
 
               <motion.span
@@ -128,7 +142,7 @@ export default function Projects() {
 
           {/* RIGHT */}
           <motion.p
-            className="text-sm md:text-base text-[hsl(var(--scroll-indicator))]/70 leading-relaxed font-light max-w-md md:ml-auto"
+            className="text-sm md:text-base text-foreground/65 leading-relaxed font-normal max-w-md md:ml-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -169,11 +183,27 @@ export default function Projects() {
 ------------------------------------------- */
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 85%", "end 15%"],
   });
+
+  const isInView = useInView(ref, { amount: 0.45, margin: "0px" });
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) return;
+
+    if (isInView) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isInView]);
 
   // Animazioni basate sullo scroll
   const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
@@ -224,12 +254,18 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             } as React.CSSProperties
           }
         >
-          <motion.img
-            src={project.image}
-            alt={project.title}
+          <motion.video
+            ref={videoRef}
+            src={project.video}
             className="w-full h-full object-cover will-change-transform"
             style={{ x: imageX }}
             transition={{ duration: 1.2, ease: "easeOut" }}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            disablePictureInPicture
           />
 
           {/* GRADIENT OVERLAYS */}
