@@ -70,7 +70,7 @@ export default function Projects() {
   const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
 
-  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [16, 10, 4]);
+
 
   const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
 
@@ -123,7 +123,7 @@ export default function Projects() {
                 <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
 
                 className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4"
-              >
+             
                 <span className="text-[hsl(var(--accent-orange))]/80">Featured</span>
                 <span className="text-[hsl(var(--scroll-indicator))]">Projects</span>
 
