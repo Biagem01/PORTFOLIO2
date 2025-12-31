@@ -2,10 +2,23 @@ import {
   motion,
   useScroll,
   useTransform,
+
   useMotionTemplate,
   useInView,
 } from "framer-motion";
 import { useEffect, useRef } from "react";
+
+  MotionValue,
+  useMotionTemplate,
+
+  useInView,
+} from "framer-motion";
+import { useEffect, useRef } from "react";
+
+
+
+import { ArrowUpRight } from "lucide-react";
+
 
 /* -------------------------------------------
    PROJECT DATA
@@ -15,7 +28,10 @@ interface Project {
   description: string;
   tags: string[];
   video: string;
+
   poster: string;
+
+
   year: string;
   category: string;
 }
@@ -26,9 +42,13 @@ const projects: Project[] = [
     description:
       "Platform progettata e sviluppata per gestire prodotti, pagamenti e dashboard professionale.",
     tags: ["React", "TypeScript", "Stripe", "Tailwind CSS"],
+
     video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
     poster:
       "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1600&q=80",
+
+    video: "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
+
     year: "2024",
     category: "Web Development",
   },
@@ -37,9 +57,13 @@ const projects: Project[] = [
     description:
       "Dashboard real-time con data visualization, filtri avanzati e animazioni dinamiche.",
     tags: ["Next.js", "Chart.js", "PostgreSQL"],
+
     video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/beer.mp4",
     poster:
       "https://images.unsplash.com/photo-1521790945508-bf2a36314e85?auto=format&fit=crop&w=1600&q=80",
+
+    video: "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
+
     year: "2024",
     category: "Data Visualization",
   },
@@ -48,9 +72,13 @@ const projects: Project[] = [
     description:
       "App social completa con feed, gestione profili, chat in tempo reale e micro-animazioni.",
     tags: ["React", "Firebase", "Framer Motion"],
+
     video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
     poster:
       "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+
+    video: "https://storage.googleapis.com/coverr-main/mp4/Bridge.mp4",
+
     year: "2023",
     category: "Mobile & Web",
   },
@@ -70,7 +98,15 @@ export default function Projects() {
   const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
   const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+
   const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [16, 10, 4]);
+
+
+
+
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
+
+
   const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
   const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
   const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
@@ -113,10 +149,21 @@ export default function Projects() {
                   y: titleLift,
                   letterSpacing: letterSpacingPx,
                 }}
+
+
+
                 className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4 uppercase"
               >
                 <span className="text-[hsl(var(--accent-orange))]/85">FEATURED</span>
                 <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
+
+
+                className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4"
+             
+                <span className="text-[hsl(var(--accent-orange))]/80">Featured</span>
+                <span className="text-[hsl(var(--scroll-indicator))]">Projects</span>
+
+
               </motion.h2>
 
               <motion.span
@@ -225,8 +272,24 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
         }}
         style={{ border: "none", background: "transparent", padding: 0 }}
       >
+
         {/* VIDEO BACKDROP */}
         <motion.div className="absolute inset-0 overflow-hidden will-change-transform rounded-[32px] border border-white/10 bg-black">
+
+        {/* IMAGE WITH MASK REVEAL */}
+        <motion.div
+          className="absolute inset-0 overflow-hidden will-change-transform"
+          style={
+            {
+              "--pos": maskPosition,
+              WebkitMaskImage:
+                "linear-gradient(90deg, black 0%, black var(--pos), transparent calc(var(--pos) + 8%))",
+              maskImage:
+                "linear-gradient(90deg, black 0%, black var(--pos), transparent calc(var(--pos) + 8%))",
+            } as React.CSSProperties
+          }
+        >
+
           <motion.video
             ref={videoRef}
             src={project.video}
@@ -239,8 +302,10 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             playsInline
             preload="auto"
             disablePictureInPicture
+
             controls={false}
             poster={project.poster}
+
           />
 
           {/* GRADIENT OVERLAYS */}
