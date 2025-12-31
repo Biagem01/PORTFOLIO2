@@ -1,6 +1,11 @@
-import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
-import { useRef } from "react";
-import { ArrowUpRight } from "lucide-react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionTemplate,
+  useInView,
+} from "framer-motion";
+import { useEffect, useRef } from "react";
 
 /* -------------------------------------------
    PROJECT DATA
@@ -9,7 +14,8 @@ interface Project {
   title: string;
   description: string;
   tags: string[];
-  image: string;
+  video: string;
+  poster: string;
   year: string;
   category: string;
 }
@@ -20,8 +26,9 @@ const projects: Project[] = [
     description:
       "Platform progettata e sviluppata per gestire prodotti, pagamenti e dashboard professionale.",
     tags: ["React", "TypeScript", "Stripe", "Tailwind CSS"],
-    image:
-      "https://images.unsplash.com/photo-1557821552-17105176677c?w=1920&h=1080&fit=crop",
+    video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1600&q=80",
     year: "2024",
     category: "Web Development",
   },
@@ -30,8 +37,9 @@ const projects: Project[] = [
     description:
       "Dashboard real-time con data visualization, filtri avanzati e animazioni dinamiche.",
     tags: ["Next.js", "Chart.js", "PostgreSQL"],
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&h=1080&fit=crop",
+    video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/beer.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1521790945508-bf2a36314e85?auto=format&fit=crop&w=1600&q=80",
     year: "2024",
     category: "Data Visualization",
   },
@@ -40,8 +48,9 @@ const projects: Project[] = [
     description:
       "App social completa con feed, gestione profili, chat in tempo reale e micro-animazioni.",
     tags: ["React", "Firebase", "Framer Motion"],
-    image:
-      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1920&h=1080&fit=crop",
+    video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
     year: "2023",
     category: "Mobile & Web",
   },
@@ -51,10 +60,31 @@ const projects: Project[] = [
    MAIN
 ------------------------------------------- */
 export default function Projects() {
+  const headerRef = useRef<HTMLDivElement | null>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: headerRef,
+    offset: ["start 80%", "end 20%"],
+  });
+
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
+  const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
+  const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [16, 10, 4]);
+  const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
+  const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
+  const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
+
+  const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
+  const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
+
   return (
     <section id="projects" className="relative bg-background">
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20 md:pb-32">
+      <div
+        ref={headerRef}
+        className="max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20 md:pb-32 relative overflow-visible"
+      >
         <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-end">
           {/* LEFT */}
           <div className="space-y-4">
@@ -69,24 +99,39 @@ export default function Projects() {
               Selected Work
             </motion.p>
 
-            <motion.h2
-              data-cursor="big"
-              className="text-[1.5rem] md:text-[3.5rem] lg:text-[4.5rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))]"
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              Featured{" "}
-              <span className="text-[hsl(var(--accent-orange))]/80">
-                Projects
-              </span>
-            </motion.h2>
+            <div className="relative">
+              <motion.div
+                style={{ opacity: haloOpacity, scale: haloScale }}
+                className="pointer-events-none absolute inset-x-0 top-[-12px] h-28 md:h-36 rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
+              />
+
+              <motion.h2
+                data-cursor="big"
+                style={{
+                  opacity: titleOpacity,
+                  filter: blurFilter,
+                  y: titleLift,
+                  letterSpacing: letterSpacingPx,
+                }}
+                className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4 uppercase"
+              >
+                <span className="text-[hsl(var(--accent-orange))]/85">FEATURED</span>
+                <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
+              </motion.h2>
+
+              <motion.span
+                aria-hidden
+                style={{ opacity: ghostOpacity, y: titleLift }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-[3.5rem] md:text-[5rem] lg:text-[6rem] font-black tracking-[1.2rem] text-foreground/5 select-none"
+              >
+                FEATURED PROJECTS
+              </motion.span>
+            </div>
           </div>
 
           {/* RIGHT */}
           <motion.p
-            className="text-sm md:text-base text-[hsl(var(--scroll-indicator))]/70 leading-relaxed font-light max-w-md md:ml-auto"
+            className="text-sm md:text-base text-foreground/65 leading-relaxed font-normal max-w-md md:ml-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -127,23 +172,34 @@ export default function Projects() {
 ------------------------------------------- */
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 85%", "end 15%"],
   });
 
-  // Animazioni basate sullo scroll
-  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0.92, 1, 1, 0.92]);
-  const imageX = useTransform(scrollYProgress, [0, 1], [120, 0]);
+  const isInView = useInView(ref, { amount: 0.45, margin: "0px" });
 
-  // Mask reveal animation
-  const maskPosition: MotionValue<string> = useTransform(
-    scrollYProgress,
-    [0, 0.5],
-    ["0%", "100%"]
-  );
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) return;
+
+    if (isInView) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isInView]);
+
+  // Animazioni basate sullo scroll
+  const opacity = useTransform(scrollYProgress, [0, 0.12, 0.85, 1], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.2, 0.65, 1], [0.9, 1, 0.95, 0.84]);
+  const imageX = useTransform(scrollYProgress, [0, 1], [140, 0]);
+  const depthTilt = useTransform(scrollYProgress, [0, 0.5, 1], [6, 0, -4]);
+  const lift = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [60, 18, 0, -28]);
 
   // Content animations
   const titleY = useTransform(scrollYProgress, [0.1, 0.4], [60, 0]);
@@ -156,51 +212,48 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
   return (
     <motion.div
       ref={ref}
-      style={{ opacity, scale }}
+      style={{ opacity, scale, rotateX: depthTilt, y: lift }}
       className="h-[100vh] w-full relative flex items-center justify-center"
     >
       {/* CLICKABLE FULLSCREEN AREA */}
-      <div
+      <motion.button
         className="absolute inset-0 cursor-pointer"
         data-cursor="view"
-        onClick={() =>
-          (window.location.href = `/project/${project.title
-            .toLowerCase()
-            .replace(/\s+/g, "-")}`)
-        }
+        onClick={() => {
+          const slug = project.title.toLowerCase().replace(/\s+/g, "-");
+          window.location.href = `/project/${slug}`;
+        }}
+        style={{ border: "none", background: "transparent", padding: 0 }}
       >
-        {/* IMAGE WITH MASK REVEAL */}
-        <motion.div
-          className="absolute inset-0 overflow-hidden will-change-transform"
-          style={
-            {
-              "--pos": maskPosition,
-              WebkitMaskImage:
-                "linear-gradient(90deg, black 0%, black var(--pos), transparent calc(var(--pos) + 8%))",
-              maskImage:
-                "linear-gradient(90deg, black 0%, black var(--pos), transparent calc(var(--pos) + 8%))",
-            } as React.CSSProperties
-          }
-        >
-          <motion.img
-            src={project.image}
-            alt={project.title}
+        {/* VIDEO BACKDROP */}
+        <motion.div className="absolute inset-0 overflow-hidden will-change-transform rounded-[32px] border border-white/10 bg-black">
+          <motion.video
+            ref={videoRef}
+            src={project.video}
             className="w-full h-full object-cover will-change-transform"
             style={{ x: imageX }}
             transition={{ duration: 1.2, ease: "easeOut" }}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            controls={false}
+            poster={project.poster}
           />
 
           {/* GRADIENT OVERLAYS */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--project-overlay))]/80 via-[hsl(var(--project-overlay))]/30 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--project-overlay))]/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--project-overlay))]/85 via-[hsl(var(--project-overlay))]/35 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--project-overlay))]/55 via-transparent to-transparent" />
         </motion.div>
 
-        {/* LIGHT BEAM EFFECT */}
+        {/* LIGHT SHEEN */}
         <motion.div
-          className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/5 via-transparent to-transparent"
-          style={{ opacity: 0.2, x: -150, rotate: -15 }}
+          className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/8 via-transparent to-transparent"
+          style={{ opacity: 0.35, x: -120, rotate: -12 }}
         />
-      </div>
+      </motion.button>
 
       {/* PROJECT NUMBER - DECORATIVE */}
       <motion.span
