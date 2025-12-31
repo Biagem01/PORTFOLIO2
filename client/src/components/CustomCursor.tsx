@@ -19,21 +19,26 @@ export default function CustomCursor() {
       cursorY.set(e.clientY);
 
       const target = e.target as HTMLElement;
+      const cursorElement = target.closest("[data-cursor]") as HTMLElement | null;
+      const cursorType = cursorElement?.getAttribute("data-cursor");
 
       // 👉 Pagina dettagli: cursore SEMPRE arancione senza testo
-      if (target.closest("[data-cursor='details']")) {
+      if (cursorType === "details") {
         setVariant("details");
         return;
       }
 
-      if (target.closest("[data-cursor='hide']")) {
+      if (cursorType === "hide") {
         setVariant("hidden");
-      } else if (target.closest("[data-cursor='small']")) {
+      } else if (cursorType === "small") {
         setVariant("small");
-      } else if (target.closest("[data-cursor='view']")) {
+      } else if (cursorType === "view") {
         setVariant("view");
-      } else if (target.closest("[data-cursor='big']")) {
+      } else if (cursorType === "big") {
         setVariant("big");
+      } else if (target.closest("button, [role='button']")) {
+        // Nasconde il cursore sui bottoni standard, se non override-ato
+        setVariant("hidden");
       } else {
         setVariant("default");
       }
@@ -75,8 +80,8 @@ export default function CustomCursor() {
 
         borderRadius: "999px",
 
-        // 👉 SEMPRE ARANCIONE OVUNQUE
-        backgroundColor: "rgb(207,78,8)",
+        // 👉 Colore brand aggiornato
+        backgroundColor: "rgb(235, 89, 57)",
 
         // 👉 SE siamo nella pagina dettagli → NO blend mode
         // 👉 Altrimenti, effetto figo di difference
