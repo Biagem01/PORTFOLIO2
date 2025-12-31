@@ -13,6 +13,8 @@ const Footer = () => {
   });
 
 
+
+
   const y = useTransform(scrollYProgress, [0, 1], ["-12%", "10%"]);
   const ghostOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.08, 0.5, 0.08]);
   const haloScale = useTransform(scrollYProgress, [0, 1], [0.9, 1.08]);
@@ -25,11 +27,13 @@ const Footer = () => {
   const cardLift = useTransform(scrollYProgress, [0, 1], [30, 0]);
   const progressScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
+
   const y = useTransform(scrollYProgress, [0, 1], ["-10%", "8%"]);
   const ghostOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.12, 0.4, 0.12]);
   const haloScale = useTransform(scrollYProgress, [0, 1], [0.9, 1.05]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 1, 0.4]);
   const underlineX = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
 
 
   const socialLinks = useMemo(
@@ -56,7 +60,11 @@ const Footer = () => {
 
     [],
 
+
+    [],
+
     []
+
 
   );
 
@@ -70,6 +78,8 @@ const Footer = () => {
         style={{ opacity: ghostOpacity, scale: haloScale }}
         className="pointer-events-none absolute inset-0 flex items-center justify-center"
       >
+
+
 
         <motion.div
           className="text-[28vw] md:text-[22vw] font-black leading-none tracking-tighter text-[hsl(var(--scroll-indicator))]/20 select-none"
@@ -141,6 +151,7 @@ const Footer = () => {
                   className="relative z-10"
                 >
 
+
         <motion.div
           className="text-[28vw] md:text-[22vw] font-black leading-none tracking-tighter text-[hsl(var(--scroll-indicator))]/20 select-none"
           style={{ y }}
@@ -186,6 +197,7 @@ const Footer = () => {
               >
                 <a href="mailto:tuaemail@example.com" data-testid="cta-email">
 
+
                   start a project
                 </a>
               </Button>
@@ -202,10 +214,12 @@ const Footer = () => {
                   data-testid="cta-contact"
                   className="relative z-10"
                 >
+
               className="rounded-full px-7 py-6 text-base font-semibold border border-foreground/60 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:text-[hsl(var(--scroll-indicator))] hover:bg-black/60"
                 asChild
               >
                 <a href="#contact" data-testid="cta-contact">
+
 
                   view contact
                 </a>
@@ -229,6 +243,7 @@ const Footer = () => {
               transition={{ duration: 0.8, ease: "easeOut" }}
               style={{ y: cardLift }}
               className="rounded-3xl border border-border/60 bg-background/70 backdrop-blur-lg p-8 shadow-[0_30px_70px_-48px_rgba(0,0,0,0.65)]"
+
 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -271,6 +286,8 @@ const Footer = () => {
 
                       className="group relative overflow-hidden gap-2 rounded-full border border-border/70 px-5 py-2.5 text-sm font-semibold text-foreground/85 transition-all duration-500 ease-out hover:-translate-y-1 hover:border-[hsl(var(--scroll-indicator))] hover:shadow-[0_16px_58px_-46px_rgba(235,89,57,0.9)] hover:text-black after:absolute after:inset-0 after:translate-y-full after:rounded-full after:bg-[hsl(var(--scroll-indicator))] after:transition-transform after:duration-500 after:ease-out group-hover:after:translate-y-0"
 
+                      className="group relative overflow-hidden gap-2 rounded-full border border-border/70 px-5 py-2.5 text-sm font-semibold text-foreground/85 transition-all duration-500 ease-out hover:-translate-y-1 hover:border-[hsl(var(--scroll-indicator))] hover:shadow-[0_16px_58px_-46px_rgba(235,89,57,0.9)] hover:text-black after:absolute after:inset-0 after:translate-y-full after:rounded-full after:bg-[hsl(var(--scroll-indicator))] after:transition-transform after:duration-500 after:ease-out group-hover:after:translate-y-0"
+
                       className="gap-2 rounded-full border border-border/70 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:bg-[hsl(var(--scroll-indicator))] hover:text-black"
 
                       asChild
@@ -282,6 +299,10 @@ const Footer = () => {
                         data-testid={`link-${link.name.toLowerCase()}`}
 
                         className="relative z-10 inline-flex items-center gap-2"
+
+
+                        className="relative z-10 inline-flex items-center gap-2"
+
 
 
                       >

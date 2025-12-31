@@ -31,7 +31,11 @@ const Contact = () => {
 
     offset: ["start 80%", "end 20%"],
 
+
+    offset: ["start 80%", "end 20%"],
+
      offset: ["start 80%", "end 20%"],
+
 
   });
 
@@ -48,6 +52,7 @@ const Contact = () => {
   const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
   const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
 
+
   const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
   const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
@@ -55,6 +60,7 @@ const Contact = () => {
   const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
   const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
   const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
+
 
   const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
   const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
@@ -94,11 +100,14 @@ const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
       className="relative py-32 px-6 bg-black text-white overflow-visible"
     >
 
+
+
       <div className="max-w-7xl mx-auto relative">
 
         {/* ⭐ LINEA ANIMATA (assoluta, parte sotto il titolo) */}
         {/* ⭐ LINEA ANIMATA COMPLETA */}
         <motion.div
+
 
 
       <div className="max-w-7xl mx-auto relative">
@@ -112,6 +121,7 @@ const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
         {/* ⭐ LINEA ANIMATA (assoluta, parte sotto il titolo) */}
         {/* ⭐ LINEA ANIMATA COMPLETA */}
    <motion.div
+
 
 
           style={{
@@ -178,13 +188,7 @@ const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
             <span className="text-[hsl(var(--accent-orange))]/80">TOUCH</span>
           </motion.h2>
 
-          <motion.span
-            style={{ opacity: ghostOpacity, y: titleLift }}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[6.25rem] md:text-[7.5rem] lg:text-[9rem] font-black tracking-[1.2rem] text-white/5 select-none"
-            aria-hidden
-          >
-            GET IN TOUCH
-          </motion.span>
+
 
 
             <span className="text-[hsl(var(--scroll-indicator))]">IN</span>
@@ -199,6 +203,22 @@ const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
           >
             GET IN TOUCH
           </motion.span>
+
+
+            <span className="text-[hsl(var(--scroll-indicator))]">IN</span>
+
+            <span className="text-[hsl(var(--accent-orange))]/80">TOUCH</span>
+          </motion.h2>
+
+
+          <motion.span
+            style={{ opacity: ghostOpacity, y: titleLift }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[6.25rem] md:text-[7.5rem] lg:text-[9rem] font-black tracking-[1.2rem] text-white/5 select-none"
+            aria-hidden
+          >
+            GET IN TOUCH
+          </motion.span>
+
 
 
           <motion.div
@@ -228,6 +248,7 @@ const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
             <span className="text-[hsl(var(--accent-orange))]/80">GET</span>
 
             <span className="text-[hsl(var(--scroll-indicator))]">IN</span>
+
 
 
 

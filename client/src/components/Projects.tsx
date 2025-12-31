@@ -2,6 +2,12 @@ import {
   motion,
   useScroll,
   useTransform,
+
+  useMotionTemplate,
+  useInView,
+} from "framer-motion";
+import { useEffect, useRef } from "react";
+
   MotionValue,
   useMotionTemplate,
 
@@ -13,6 +19,7 @@ import { useEffect, useRef } from "react";
 
 import { ArrowUpRight } from "lucide-react";
 
+
 /* -------------------------------------------
    PROJECT DATA
 ------------------------------------------- */
@@ -21,6 +28,10 @@ interface Project {
   description: string;
   tags: string[];
   video: string;
+
+  poster: string;
+
+
   year: string;
   category: string;
 }
@@ -31,7 +42,13 @@ const projects: Project[] = [
     description:
       "Platform progettata e sviluppata per gestire prodotti, pagamenti e dashboard professionale.",
     tags: ["React", "TypeScript", "Stripe", "Tailwind CSS"],
+
+    video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1600&q=80",
+
     video: "https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4",
+
     year: "2024",
     category: "Web Development",
   },
@@ -40,7 +57,13 @@ const projects: Project[] = [
     description:
       "Dashboard real-time con data visualization, filtri avanzati e animazioni dinamiche.",
     tags: ["Next.js", "Chart.js", "PostgreSQL"],
+
+    video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/beer.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1521790945508-bf2a36314e85?auto=format&fit=crop&w=1600&q=80",
+
     video: "https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4",
+
     year: "2024",
     category: "Data Visualization",
   },
@@ -49,7 +72,13 @@ const projects: Project[] = [
     description:
       "App social completa con feed, gestione profili, chat in tempo reale e micro-animazioni.",
     tags: ["React", "Firebase", "Framer Motion"],
+
+    video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    poster:
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+
     video: "https://storage.googleapis.com/coverr-main/mp4/Bridge.mp4",
+
     year: "2023",
     category: "Mobile & Web",
   },
@@ -70,9 +99,13 @@ export default function Projects() {
   const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
 
+  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [16, 10, 4]);
+
+
 
 
   const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
+
 
   const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
   const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
@@ -117,15 +150,19 @@ export default function Projects() {
                   letterSpacing: letterSpacingPx,
                 }}
 
+
+
                 className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4 uppercase"
               >
                 <span className="text-[hsl(var(--accent-orange))]/85">FEATURED</span>
                 <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
 
+
                 className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4"
              
                 <span className="text-[hsl(var(--accent-orange))]/80">Featured</span>
                 <span className="text-[hsl(var(--scroll-indicator))]">Projects</span>
+
 
               </motion.h2>
 
@@ -205,16 +242,11 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
   }, [isInView]);
 
   // Animazioni basate sullo scroll
-  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0.92, 1, 1, 0.92]);
-  const imageX = useTransform(scrollYProgress, [0, 1], [120, 0]);
-
-  // Mask reveal animation
-  const maskPosition: MotionValue<string> = useTransform(
-    scrollYProgress,
-    [0, 0.5],
-    ["0%", "100%"]
-  );
+  const opacity = useTransform(scrollYProgress, [0, 0.12, 0.85, 1], [0, 1, 1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.2, 0.65, 1], [0.9, 1, 0.95, 0.84]);
+  const imageX = useTransform(scrollYProgress, [0, 1], [140, 0]);
+  const depthTilt = useTransform(scrollYProgress, [0, 0.5, 1], [6, 0, -4]);
+  const lift = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [60, 18, 0, -28]);
 
   // Content animations
   const titleY = useTransform(scrollYProgress, [0.1, 0.4], [60, 0]);
@@ -227,19 +259,23 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
   return (
     <motion.div
       ref={ref}
-      style={{ opacity, scale }}
+      style={{ opacity, scale, rotateX: depthTilt, y: lift }}
       className="h-[100vh] w-full relative flex items-center justify-center"
     >
       {/* CLICKABLE FULLSCREEN AREA */}
-      <div
+      <motion.button
         className="absolute inset-0 cursor-pointer"
         data-cursor="view"
-        onClick={() =>
-          (window.location.href = `/project/${project.title
-            .toLowerCase()
-            .replace(/\s+/g, "-")}`)
-        }
+        onClick={() => {
+          const slug = project.title.toLowerCase().replace(/\s+/g, "-");
+          window.location.href = `/project/${slug}`;
+        }}
+        style={{ border: "none", background: "transparent", padding: 0 }}
       >
+
+        {/* VIDEO BACKDROP */}
+        <motion.div className="absolute inset-0 overflow-hidden will-change-transform rounded-[32px] border border-white/10 bg-black">
+
         {/* IMAGE WITH MASK REVEAL */}
         <motion.div
           className="absolute inset-0 overflow-hidden will-change-transform"
@@ -253,6 +289,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             } as React.CSSProperties
           }
         >
+
           <motion.video
             ref={videoRef}
             src={project.video}
@@ -265,19 +302,23 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             playsInline
             preload="auto"
             disablePictureInPicture
+
+            controls={false}
+            poster={project.poster}
+
           />
 
           {/* GRADIENT OVERLAYS */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--project-overlay))]/80 via-[hsl(var(--project-overlay))]/30 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--project-overlay))]/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--project-overlay))]/85 via-[hsl(var(--project-overlay))]/35 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--project-overlay))]/55 via-transparent to-transparent" />
         </motion.div>
 
-        {/* LIGHT BEAM EFFECT */}
+        {/* LIGHT SHEEN */}
         <motion.div
-          className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/5 via-transparent to-transparent"
-          style={{ opacity: 0.2, x: -150, rotate: -15 }}
+          className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/8 via-transparent to-transparent"
+          style={{ opacity: 0.35, x: -120, rotate: -12 }}
         />
-      </div>
+      </motion.button>
 
       {/* PROJECT NUMBER - DECORATIVE */}
       <motion.span

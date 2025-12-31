@@ -64,15 +64,6 @@ export default function LoadingScreen({
         />
       </div>
 
-
-      {/* CIRCULAR LOADER */}
-
-
-      {/* CIRCULAR LOADER */}
-
-        {/* CIRCULAR LOADER */}
-      {/* CIRCULAR LOADER */}
-
       <div className="flex flex-col items-center justify-center gap-10 select-none" data-cursor="hide">
         <div className="relative">
           {/* Rotating ring */}
@@ -83,6 +74,7 @@ export default function LoadingScreen({
           />
 
 
+
           {/* Inner circle */}
           <div className="absolute inset-3 rounded-full bg-black flex items-center justify-center border border-white/12">
             <div className="text-center">
@@ -167,6 +159,7 @@ export default function LoadingScreen({
           </div>
 
 
+
           {/* Inner circle */}
           <div className="absolute inset-3 rounded-full bg-black flex items-center justify-center border border-white/12">
             <div className="text-center">
@@ -233,6 +226,7 @@ export default function LoadingScreen({
           </motion.button>
         )}
       </div>
+
 
      
         </div>
