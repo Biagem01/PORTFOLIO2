@@ -121,11 +121,11 @@ const About = () => {
     data-cursor="big"
   >
     Quando progetto una pagina non penso solo a come{" "}
-    <span className="font-medium uppercase text-[hsl(var(--accent-orange))]/80">
+    <span className="font-medium uppercase text-[hsl(var(--accent-orange))]">
       appare
     </span>
     , ma anche a come{" "}
-    <span className="font-medium uppercase text-[hsl(var(--accent-orange))]/80">
+    <span className="font-medium uppercase text-[hsl(var(--accent-orange))]">
       si muove
     </span>
     : ritmo dello scroll, tempi delle animazioni, micro-feedback funzionali.
@@ -142,7 +142,7 @@ const About = () => {
     data-cursor="big"
   >
     Credo in layout{" "}
-    <span className="font-medium uppercase text-[hsl(var(--accent-orange))]/80">
+    <span className="font-medium uppercase text-[hsl(var(--accent-orange))]">
       semplici ma vivi
     </span>
     : niente elementi inutili, solo ciò che serve per comunicare un’esperienza pulita e coerente.

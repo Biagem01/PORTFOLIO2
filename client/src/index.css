@@ -27,7 +27,7 @@
     --popover-foreground: 40 25% 92%;
     --secondary-foreground: 40 25% 92%;
     --muted-foreground: 40 20% 80%;
-    --accent-orange: 16 100% 50%;
+  --accent-orange: 10.8 81.7% 57.3%; /* #EB5939 */
 
     /* SURFACES */
     --card: 0 0% 100%;
@@ -226,7 +226,7 @@ html, body, #root {
 
 /* Orange accent for bold text in hero */
 .font-bold, .font-semibold {
-  color: hsl(var(--accent-orange)) / 80;
+  color: #EB5939;
 }
 
 /* -----------------------------------------
