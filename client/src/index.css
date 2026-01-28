@@ -70,9 +70,13 @@
 
     /* Scroll indicator (oro/beige come MinhPham) */
     --scroll-indicator: 38 33% 57%;
+    --body-text: 183 171 152;
     
     /* Project card */
     --project-overlay: 240 10% 3%;
+
+      --hero-gold: 182 155 109;   /* rgb */
+  --hero-orange: 235 89 57;   /* rgb */
   }
 
   /* -----------------------------------------
@@ -124,9 +128,14 @@
 
     /* Scroll indicator */
     --scroll-indicator: 38 33% 57%;
+    --body-text: 183 171 152;
     
     /* Project card */
     --project-overlay: 240 10% 3%;
+
+    
+     --hero-gold: 182 155 109;
+  --hero-orange: 235 89 57;
   }
 }
 
@@ -146,7 +155,7 @@
 
 h1, h2, h3, h4, h5, h6 {
   font-family: "URW Gothic", sans-serif;
-  font-weight: 900; /* oppure 900 se vuoi extra bold */
+ 
 }
 
 p {
@@ -162,6 +171,33 @@ p {
       scroll-behavior: smooth;
       scroll-padding-top: 80px;
     }
+  }
+
+  /* base responsive: evita overflow strani */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    overflow-x: clip ; /* 🔥 blocca lo scroll orizzontale */
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100%;
+  }
+
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* se qualche parola lunga rompe layout */
+  h1, h2, h3, p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
 
@@ -226,7 +262,7 @@ html, body, #root {
 
 /* Orange accent for bold text in hero */
 .font-bold, .font-semibold {
-  color: #EB5939;
+  font-weight: 900;
 }
 
 /* -----------------------------------------
@@ -291,3 +327,5 @@ html, body, #root {
 .project-image-container:hover img {
   transform: scale(1.08);
 }
+
+

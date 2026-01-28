@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 const sections = [
   { id: "about", label: "About" },
@@ -11,108 +11,117 @@ const sections = [
 
 export function ScrollIndicator() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       const windowHeight = window.innerHeight;
 
-      // Find which section is currently in viewport
       let currentIndex = 0;
-
       sections.forEach((section, index) => {
-        const element = document.getElementById(section.id);
-        if (element) {
-          const elementTop = element.offsetTop;
-          if (scrollPosition >= elementTop - windowHeight / 3) {
-            currentIndex = index;
-          }
-        }
+        const el = document.getElementById(section.id);
+        if (!el) return;
+
+        const top = el.offsetTop;
+        if (scrollPosition >= top - windowHeight / 3) currentIndex = index;
       });
 
       setActiveIndex(currentIndex);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+  // layout constants (coerenti per calcolare il cursore)
+  const itemH = 18; // altezza “visiva” del testo
+  const gap = 16; // gap-4 = 16px
+  const cursorH = 10; // pallino/linea
+  const cursorOffsetY = 4; // centratura
+
   return (
-    <div 
+    <nav
       className="fixed top-8 right-6 z-40 hidden md:flex flex-col gap-4 items-end"
       data-testid="scroll-indicator-nav"
-      data-cursor="hide"  // 👈 CURSORE ARANCIONE SPARISCE QUI
+      data-cursor="hide"
+      aria-label="Section navigation"
     >
-      {sections.map((section, index) => (
-        <motion.div
-        
-          key={section.id}
-          initial={{ opacity: 0.4 }}
-          animate={{ 
-            opacity: activeIndex === index ? 1 : 0.35,
-          }}
-          transition={{ duration: 0.4 }}
-          className="cursor-pointer font-display text-xs tracking-widest"
-        >
-        <a
-  href={`#${section.id}`}
-  data-cursor="hide"
-  onClick={(e) => {
-    e.preventDefault();
-    const element = document.getElementById(section.id);
-    element?.scrollIntoView({ behavior: "smooth" });
-  }}
+      {sections.map((section, index) => {
+        const isActive = activeIndex === index;
 
-  className={`
-    transition-all duration-300 font-medium relative block
-    ${activeIndex === index ? "font-semibold opacity-100" : "opacity-80 hover:opacity-100"}
-  `}
+        return (
+          <motion.div
+            key={section.id}
+            initial={reduce ? { opacity: 1 } : { opacity: 0, y: 6, filter: "blur(10px)" }}
+            animate={{ opacity: isActive ? 1 : 0.55, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, ease, delay: reduce ? 0 : 0.02 + index * 0.03 }}
+            className="relative"
+          >
+            <a
+              href={`#${section.id}`}
+              data-cursor="hide"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className={[
+                "group relative block select-none",
+                "text-[0.6rem] md:text-[0.65rem] tracking-[0.35em] uppercase",
+                // ⚠️ NON usare font-bold/font-semibold (nel tuo CSS diventano arancioni)
+                "font-extrabold",
+                "transition-opacity duration-300",
+                isActive ? "opacity-100" : "opacity-80 hover:opacity-100",
+              ].join(" ")}
+              style={{
+                color: isActive
+                  ? "hsl(var(--scroll-indicator))"
+                  : "hsl(var(--scroll-indicator) / 0.55)",
+              }}
+            >
+              {/* micro slide come Minh */}
+              <motion.span
+                initial={false}
+                whileHover={reduce ? undefined : { x: 6 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="inline-block"
+              >
+                {section.label}
+              </motion.span>
 
-  style={{
-    color:
-      activeIndex === index
-        ? "hsl(var(--scroll-indicator))"
-        : "hsl(var(--foreground) / 0.55)",   // 🔥 molto più visibile
-  }}
->
-  <motion.span
-    initial={false}
-    whileHover={{ x: 6 }}
-    transition={{ duration: 0.25, ease: "easeOut" }}
-    className="inline-block font-extrabold"
-  >
-    {section.label}
-  </motion.span>
+              {/* underline on hover */}
+              <span className="pointer-events-none absolute left-0 -bottom-1 h-px w-full overflow-hidden">
+                <span className="absolute inset-0 bg-[hsl(var(--scroll-indicator))]/15" />
+                <span className="absolute inset-0 bg-[hsl(var(--scroll-indicator))] origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
+              </span>
+            </a>
+          </motion.div>
+        );
+      })}
 
-  <motion.div
-    className="absolute left-0 -bottom-1 h-[1px] bg-[hsl(var(--scroll-indicator))]"
-    initial={{ width: 0 }}
-    whileHover={{ width: "100%" }}
-    transition={{ duration: 0.25, ease: "easeOut" }}
-  />
-</a>
-
-
-        </motion.div>
-      ))}
-
-      {/* Animated line indicator - minimalist */}
+      {/* cursor (pallino/linea) a sinistra, animato */}
       <motion.div
-        className="absolute w-1.5 rounded-full"
+        aria-hidden
+        className="absolute rounded-full"
         style={{
-          height: "18px",
+          width: 8,
+          height: cursorH,
           backgroundColor: "hsl(var(--scroll-indicator))",
-          right: "calc(100% + 8px)",
+          right: "calc(100% + 10px)",
+          boxShadow: "0 0 18px hsl(var(--scroll-indicator) / 0.35)",
         }}
         animate={{
-          top: `${activeIndex * (18 + 16)}px`,
+          top: `${activeIndex * (itemH + gap) + cursorOffsetY}px`,
         }}
         transition={{
           type: "spring",
-          stiffness: 120,
-          damping: 20,
+          stiffness: 140,
+          damping: 22,
         }}
       />
-    </div>
+    </nav>
   );
 }

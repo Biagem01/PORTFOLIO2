@@ -1,192 +1,271 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useMemo, useRef } from "react";
-import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowUpRight,
+  Dribbble,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
-const Footer = () => {
+function FadeIn({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+  const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+  return (
+    <motion.div
+      className={className}
+      initial={
+        reduce ? { opacity: 1 } : { opacity: 0, y: 12, filter: "blur(12px)" }
+      }
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, margin: "-8% 0px -8% 0px" }}
+      transition={{ duration: 0.9, delay, ease }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/**
+ * ✅ CONNECT ITEM con reveal “Hero-like”
+ * - titolo: font-extrabold (stesso feel di CRAFTING/MODERN)
+ * - NO font-bold/font-semibold (così non scatta la tua regola css che li colora arancio)
+ * - subtitle appare SOLO in hover come su minhpham
+ */
+function ConnectItem({
+  href,
+  title,
+  subtitle,
+  titleClassName,
+  subtitleClassName,
+  delay = 0,
+}: {
+  href: string;
+  title: string;
+  subtitle: string;
+  titleClassName: string;
+  subtitleClassName: string;
+  delay?: number;
+}) {
+  const reduce = useReducedMotion();
+  const ease: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative py-3 md:py-3.5 border-b border-white/10 focus:outline-none"
+      initial={
+        reduce ? { opacity: 0 } : { y: "140%", opacity: 0, filter: "blur(12px)" }
+      }
+      whileInView={
+        reduce ? { opacity: 1 } : { y: "0%", opacity: 1, filter: "blur(0px)" }
+      }
+      viewport={{ once: true, margin: "-8% 0px -8% 0px" }}
+      transition={{ duration: 1.05, delay, ease }}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <span className={titleClassName}>{title}</span>
+
+        <span className="inline-flex items-center gap-2 text-[hsl(var(--scroll-indicator))]/55">
+          <span className="relative h-px w-10 overflow-hidden">
+            <span className="absolute inset-0 bg-[hsl(var(--scroll-indicator))]/15" />
+            <span className="absolute inset-0 bg-[hsl(var(--accent-orange))] origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
+          </span>
+
+          <ArrowUpRight className="h-4 w-4 text-[hsl(var(--scroll-indicator))]/45 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[hsl(var(--scroll-indicator))]/80" />
+        </span>
+      </div>
+
+      {/* subtitle SOLO hover (come Minh) */}
+      <motion.div
+        className="overflow-hidden"
+        initial={false}
+        animate={reduce ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+        whileHover={reduce ? undefined : { height: 20, opacity: 1 }}
+        transition={{ duration: 0.24, ease }}
+      >
+        <div className={`${subtitleClassName} pt-1.5`}>{subtitle}</div>
+      </motion.div>
+    </motion.a>
+  );
+}
+
+export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const ref = useRef<HTMLDivElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
+  const [soundOn, setSoundOn] = useState(false);
+  const reduce = useReducedMotion();
 
-  const y = useTransform(scrollYProgress, [0, 1], ["-10%", "8%"]);
-  const ghostOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.12, 0.4, 0.12]);
-  const haloScale = useTransform(scrollYProgress, [0, 1], [0.9, 1.05]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 1, 0.4]);
-  const underlineX = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  // ✅ label identico al NAME hero (ma con palette del sito)
+  const HERO_LABEL =
+    "uppercase text-[0.75rem] md:text-[0.85rem] tracking-[0.35em] font-light text-[hsl(var(--scroll-indicator))]/55";
 
-  const socialLinks = useMemo(
+  // ✅ titoli: “peso” come hero (CRAFTING/MODERN...)
+  // ⚠️ NON usare font-bold/font-semibold (hai una regola CSS che li colora arancioni)
+  const HERO_LINK_TITLE =
+    "text-[1.05rem] md:text-[1.15rem] lg:text-[1.2rem] font-extrabold leading-[1.05] tracking-tight text-[hsl(var(--scroll-indicator))]";
+
+  // ✅ subtitle leggero, come subtext hero
+  const HERO_LINK_SUB =
+    "text-[0.95rem] md:text-[1rem] font-light leading-relaxed tracking-tight text-[hsl(var(--scroll-indicator))]/55";
+
+  const connect = useMemo(
     () => [
-      {
-        name: "Email",
-        icon: Mail,
-        href: "mailto:tuaemail@example.com",
-        label: "Email",
-      },
-      {
-        name: "LinkedIn",
-        icon: Linkedin,
-        href: "https://linkedin.com/in/yourprofile",
-        label: "LinkedIn",
-      },
-      {
-        name: "GitHub",
-        icon: Github,
-        href: "https://github.com/yourprofile",
-        label: "GitHub",
-      },
+      { title: "Dribbble", subtitle: "Fake works", href: "https://dribbble.com/" },
+      { title: "Youtube", subtitle: "Random tutorials", href: "https://www.youtube.com/" },
+      { title: "Linkedin", subtitle: "Serious me", href: "https://www.linkedin.com/" },
+      { title: "Instagram", subtitle: "Not Tiktok", href: "https://www.instagram.com/" },
+      { title: "Facebook", subtitle: "Mostly dog stories", href: "https://www.facebook.com/" },
+      { title: "Behance", subtitle: "The Jurassic Park", href: "https://www.behance.net/" },
     ],
     []
   );
 
   return (
     <footer
-      ref={ref}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background text-foreground"
+      id="footer"
+      className="relative bg-black text-white overflow-hidden"
       data-cursor="hide"
     >
-      <motion.div
-        aria-hidden
-        style={{ opacity: ghostOpacity, scale: haloScale }}
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-      >
-        <motion.div
-          className="text-[28vw] md:text-[22vw] font-black leading-none tracking-tighter text-[hsl(var(--scroll-indicator))]/20 select-none"
-          style={{ y }}
-        >
-          BC
-        </motion.div>
-      </motion.div>
+      {/* nero “unico” come Contact */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-black/70 to-black" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/65 via-transparent to-black/35" />
 
-      <div className="w-full max-w-6xl mx-auto px-6 py-20 relative z-10">
-        <motion.div
-          style={{ y, opacity: textOpacity }}
-          className="grid gap-16 lg:grid-cols-[1.1fr,0.9fr] items-end"
-        >
-          <div className="space-y-10">
-            <div className="space-y-4">
-              <motion.p
-                className="uppercase text-xs md:text-sm tracking-[0.35em] text-muted-foreground"
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
-                biagio cubisino — portfolio
-              </motion.p>
-
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-4xl md:text-5xl lg:text-6xl font-black leading-[0.95] tracking-tight"
-              >
-                Ready when you are —
-                <span className="block text-[hsl(var(--scroll-indicator))]">let&apos;s build something refined.</span>
-              </motion.h2>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              <Button
-                size="lg"
-                className="rounded-full px-7 py-6 text-base font-semibold border border-foreground bg-black text-[hsl(var(--scroll-indicator))] transition-all hover:bg-[hsl(var(--scroll-indicator))] hover:text-black hover:border-[hsl(var(--scroll-indicator))]"
-                asChild
-              >
-                <a href="mailto:tuaemail@example.com" data-testid="cta-email">
-                  start a project
-                </a>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="rounded-full px-7 py-6 text-base font-semibold border border-foreground/60 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:text-[hsl(var(--scroll-indicator))] hover:bg-black/60"
-                asChild
-              >
-                <a href="#contact" data-testid="cta-contact">
-                  view contact
-                </a>
-              </Button>
-            </div>
-
-            <div className="relative h-px bg-border/40 overflow-hidden">
-              <motion.div
-                className="absolute left-0 top-0 h-full bg-[hsl(var(--scroll-indicator))]"
-                style={{ width: underlineX }}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="rounded-3xl border border-border/60 bg-background/60 backdrop-blur-sm p-8 shadow-sm"
-            >
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Currently</span>
-                <span className="font-semibold text-foreground">Available for freelance</span>
-              </div>
-
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Contact</p>
-                  <a
-                    href="mailto:tuaemail@example.com"
-                    className="group inline-flex items-center gap-2 text-lg font-semibold text-foreground hover:text-[hsl(var(--scroll-indicator))] transition-colors"
-                  >
-                    tuaemail@example.com
-                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                  </a>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Based in</p>
-                  <p className="text-lg font-semibold text-foreground">Palermo, IT</p>
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                {socialLinks.map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <Button
-                      key={link.name}
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 rounded-full border border-border/70 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:bg-[hsl(var(--scroll-indicator))] hover:text-black"
-                      asChild
-                    >
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid={`link-${link.name.toLowerCase()}`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span>{link.label}</span>
-                      </a>
-                    </Button>
-                  );
-                })}
-              </div>
-            </motion.div>
-
-            <div className="flex items-center justify-between text-sm text-muted-foreground border-t border-border/60 pt-6">
-              <p className="text-foreground/80">© {currentYear} Biagio Cubisino</p>
-              <p className="tracking-[0.26em] uppercase text-xs">Minimal portfolio</p>
-            </div>
-          </div>
-        </motion.div>
+      {/* grid leggerissima */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0),
+              radial-gradient(circle at 23px 23px, rgba(255,255,255,0.06) 1px, transparent 0)
+            `,
+            backgroundSize: "48px 48px",
+            animation: reduce ? "none" : "gridMove 24s linear infinite",
+          }}
+        />
       </div>
+
+      {/* grain */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.10]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E\")",
+          mixBlendMode: "overlay",
+        }}
+      />
+
+      {/* ✅ SUPER COMPACT come Minh */}
+      <div className="relative max-w-7xl mx-auto px-6 md:px-12 pt-10 md:pt-12 pb-8 md:pb-10">
+        {/* label */}
+        <FadeIn delay={0.02}>
+          <p className={HERO_LABEL}>CONNECT</p>
+        </FadeIn>
+
+        {/* 3 + 3 grid */}
+        <div className="mt-4 border-t border-white/10">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-10">
+            {connect.map((c, i) => (
+              <ConnectItem
+                key={c.title}
+                href={c.href}
+                title={c.title}
+                subtitle={c.subtitle}
+                titleClassName={HERO_LINK_TITLE}
+                subtitleClassName={HERO_LINK_SUB}
+                delay={0.06 + i * 0.03}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* bottom bar */}
+        <div className="mt-6 md:mt-7 border-t border-white/10 pt-5 md:pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <FadeIn delay={0.06}>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://dribbble.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[hsl(var(--scroll-indicator))]/55 hover:text-[hsl(var(--scroll-indicator))]/90 transition"
+                aria-label="Dribbble"
+              >
+                <Dribbble className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.instagram.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[hsl(var(--scroll-indicator))]/55 hover:text-[hsl(var(--scroll-indicator))]/90 transition"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.youtube.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[hsl(var(--scroll-indicator))]/55 hover:text-[hsl(var(--scroll-indicator))]/90 transition"
+                aria-label="YouTube"
+              >
+                <Youtube className="h-5 w-5" />
+              </a>
+              <a
+                href="https://www.linkedin.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[hsl(var(--scroll-indicator))]/55 hover:text-[hsl(var(--scroll-indicator))]/90 transition"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <div className="flex items-center justify-between md:justify-end gap-8">
+              <div className={HERO_LABEL}>© {currentYear} BIAGIO CUBISINO</div>
+
+              <button
+                type="button"
+                onClick={() => setSoundOn((s) => !s)}
+                className="group inline-flex items-center gap-3 text-[hsl(var(--scroll-indicator))]/65 hover:text-[hsl(var(--scroll-indicator))] transition"
+                aria-label={soundOn ? "Sound Off" : "Sound On"}
+              >
+                <span className={HERO_LABEL}>SOUND</span>
+                <span className="uppercase tracking-[0.35em] text-[0.75rem] md:text-[0.85rem] font-light text-[hsl(var(--scroll-indicator))]/45 group-hover:text-[hsl(var(--accent-orange))] transition">
+                  {soundOn ? "ON" : "OFF"}
+                </span>
+                {soundOn ? (
+                  <Volume2 className="h-4 w-4 opacity-70" />
+                ) : (
+                  <VolumeX className="h-4 w-4 opacity-70" />
+                )}
+              </button>
+            </div>
+          </FadeIn>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes gridMove {
+          0% { transform: translate3d(0,0,0); }
+          100% { transform: translate3d(40px,40px,0); }
+        }
+      `}</style>
     </footer>
   );
-};
-
-export default Footer;
+}

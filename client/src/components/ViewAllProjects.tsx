@@ -40,7 +40,7 @@ export default function ViewAllProjects() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
           VUOI{" "}
-          <span className="text-[hsl(var(--accent-orange))]/80">VEDERE</span>
+          <span className="text-[hsl(var(--accent-orange))]">VEDERE</span>
           <motion.span
             className="block"
             initial={{ opacity: 0, y: 40 }}

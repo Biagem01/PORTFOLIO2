@@ -1,172 +1,181 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+
+type LoadingScreenProps = {
+  onComplete: () => void;
+  durationMs?: number;
+  holdMs?: number;
+};
 
 export default function LoadingScreen({
   onComplete,
-}: {
-  onComplete: () => void;
-}) {
+  durationMs = 1800,
+  holdMs = 120,
+}: LoadingScreenProps) {
+  const reduce = useReducedMotion();
   const [progress, setProgress] = useState(0);
-  const [showStart, setShowStart] = useState(false);
+  const [open, setOpen] = useState(true);
 
-  /* -----------------------------
-      PROGRESS BAR → 0 → 100
-  ----------------------------- */
+  const holdTimerRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
   useEffect(() => {
-    let current = 0;
-    const duration = 2000;
-    const steps = 100;
-    const interval = duration / steps;
-
-    const timer = setInterval(() => {
-      current++;
-      setProgress(current);
-
-      if (current >= 100) {
-        clearInterval(timer);
-        setTimeout(() => setShowStart(true), 400);
-      }
-    }, interval);
-
-    return () => clearInterval(timer);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (holdTimerRef.current) window.clearTimeout(holdTimerRef.current);
+    };
   }, []);
 
-  /* -----------------------------
-      CLICK → EXIT LOADER
-  ----------------------------- */
-  const handleStart = () => {
-    const fade = document.getElementById("loader-wrapper");
-    if (fade) fade.classList.add("loader-fade-out");
+  useEffect(() => {
+    if (!open) return;
 
-    setTimeout(() => {
-      onComplete();
-    }, 800);
-  };
+    if (reduce) {
+      setProgress(100);
+      holdTimerRef.current = window.setTimeout(() => setOpen(false), 60);
+      return;
+    }
+
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const t = Math.min(1, elapsed / durationMs);
+      const eased = easeOutCubic(t);
+      setProgress(Math.round(eased * 100));
+
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        holdTimerRef.current = window.setTimeout(() => setOpen(false), holdMs);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (holdTimerRef.current) window.clearTimeout(holdTimerRef.current);
+    };
+  }, [durationMs, holdMs, reduce, open]);
+
+  const overlayVariants = useMemo(
+    () => ({
+      initial: { opacity: 1 },
+      animate: { opacity: 1 },
+      exit: {
+        opacity: 0,
+        transition: { duration: reduce ? 0.15 : 0.45, ease: [0.16, 1, 0.3, 1] as const },
+      },
+    }),
+    [reduce]
+  );
+
+  const centerVariants = useMemo(
+    () => ({
+      initial: reduce ? { opacity: 1 } : { opacity: 0, y: 8 },
+      animate: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: reduce ? 0.2 : 0.6, ease: [0.16, 1, 0.3, 1] as const },
+      },
+      exit: {
+        opacity: 0,
+        y: -8,
+        transition: { duration: reduce ? 0.15 : 0.35, ease: [0.16, 1, 0.3, 1] as const },
+      },
+    }),
+    [reduce]
+  );
+
+  const percentText = String(progress).padStart(2, "0");
 
   return (
-    <div
-      id="loader-wrapper"
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black text-white overflow-hidden transition-opacity duration-700"
-      data-cursor="hide"
-    >
-      {/* GRID BACKGROUND */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0),
-              radial-gradient(circle at 23px 23px, rgba(255,255,255,0.06) 1px, transparent 0)
-            `,
-            backgroundSize: "48px 48px",
-            animation: "gridMove 24s linear infinite",
-          }}
-        />
-      </div>
+    <AnimatePresence onExitComplete={onComplete}>
+      {open && (
+        <motion.div
+          className="
+            fixed inset-0 z-[9999]
+            bg-black text-white
+            overflow-x-clip overflow-y-hidden
+            [contain:layout_paint_size]
+          "
+          variants={overlayVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          role="dialog"
+          aria-label="Loading"
+          data-cursor="hide"
+        >
+          {/* Vignette soft (safe, niente animazioni) */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-black/70 to-black" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/50" />
 
-        {/* CIRCULAR LOADER */}
-      {/* CIRCULAR LOADER */}
-     {/* CIRCULAR LOADER */}
-      <div className="flex flex-col items-center justify-center gap-10 select-none" data-cursor="hide">
-        <div className="relative">
-          {/* Rotating ring */}
+          {/* CENTER */}
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
-            className="w-44 h-44 rounded-full border border-white/12"
-          />
+            className="
+              absolute inset-0
+              flex flex-col items-center justify-center
+              select-none
+              px-6
+            "
+            variants={centerVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {/* LOGO RING */}
+            <motion.div
+              className="
+                rounded-full border border-white/12
+                flex items-center justify-center
+                h-[88px] w-[88px]
+                sm:h-[104px] sm:w-[104px]
+                md:h-[120px] md:w-[120px]
+                [transform:translateZ(0)]
+              "
+              animate={reduce ? undefined : { rotate: 360 }}
+              transition={reduce ? undefined : { repeat: Infinity, duration: 10, ease: "linear" }}
+            >
+              <div className="text-center leading-none">
+                <div className="text-[0.58rem] sm:text-[0.62rem] uppercase tracking-[0.35em] text-white/40">
+                  Portfolio
+                </div>
+                <div className="mt-2 text-[1.55rem] sm:text-[1.75rem] md:text-[1.95rem] font-extrabold tracking-tight text-[hsl(var(--scroll-indicator))]">
+                  BC
+                </div>
+                <div className="mt-2 text-[0.58rem] sm:text-[0.62rem] uppercase tracking-[0.30em] text-white/35">
+                  Studio
+                </div>
+              </div>
+            </motion.div>
 
-          {/* Inner circle */}
-          <div className="absolute inset-3 rounded-full bg-black flex items-center justify-center border border-white/12">
-            <div className="text-center">
-              <p className="uppercase text-[0.62rem] tracking-[0.5em] text-white/40">
-                Portfolio
-              </p>
-              <p className="text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight text-[hsl(var(--scroll-indicator))]">
-                BC
-              </p>
-              <p className="text-[0.62rem] tracking-[0.35em] text-white/35 uppercase">
-                Studio
-              </p>
+            {/* START + % */}
+            <div className="mt-10 flex items-baseline justify-center gap-3 sm:gap-4 flex-wrap">
+              <span className="uppercase tracking-[0.30em] text-[0.8rem] sm:text-[0.88rem] text-white/85">
+                Start
+              </span>
+
+              <span className="uppercase tracking-[0.30em] text-[0.72rem] sm:text-[0.82rem] text-white/55 tabular-nums">
+                {percentText}%
+              </span>
+
+              <span className="relative -top-[2px] h-px w-14 sm:w-16 md:w-20 overflow-hidden">
+                <span className="absolute inset-0 bg-white/20" />
+                <span
+                  className="absolute inset-0 bg-[hsl(var(--scroll-indicator))]"
+                  style={{
+                    transform: `translateX(${progress >= 100 ? "0%" : "-100%"})`,
+                    transition: "transform 380ms ease",
+                  }}
+                />
+              </span>
             </div>
-          </div>
-
-          {/* Progress arc */}
-          <svg
-            className="absolute inset-0 w-44 h-44"
-            viewBox="0 0 120 120"
-            role="img"
-            aria-label="Loading progress"
-          >
-            <circle
-              cx="60"
-              cy="60"
-              r="52"
-              className="fill-none stroke-white/12"
-              strokeWidth="1.5"
-            />
-            <motion.circle
-              cx="60"
-              cy="60"
-              r="52"
-              className="fill-none stroke-[hsl(var(--scroll-indicator))]"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeDasharray="326"
-              strokeDashoffset={326 - (326 * progress) / 100}
-              animate={{ strokeDashoffset: 326 - (326 * progress) / 100 }}
-              transition={{ ease: "easeOut", duration: 0.35 }}
-            />
-          </svg>
-     
-        </div>
-      
-
-     {/* LOADING TEXT + PERCENT */}
-        {!showStart && (
-          <div className="text-center space-y-2 uppercase tracking-[0.35em]">
-            <p className="text-[13px] text-white/60">Loading</p>
-            <p className="text-[12px] text-white/40">{progress}%</p>
-          </div>
-        )}
-
-        {/* START BUTTON */}
-        {showStart && (
-          <motion.button
-            onClick={handleStart}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="px-10 py-3 rounded-full border border-[hsl(var(--scroll-indicator))] bg-black text-[hsl(var(--scroll-indicator))] text-sm tracking-[0.3em] uppercase hover:bg-[hsl(var(--scroll-indicator))] hover:text-black transition-all duration-250"
-          >
-            Start
-          </motion.button>
-        )}
-      </div>
-
-
-      {/* ANIMATIONS */}
-      <style>{`
-        @keyframes gridMove {
-          0% { transform: translate(0,0); }
-          100% { transform: translate(40px,40px); }
-        }
-
-        @keyframes logoFloat {
-          0% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-          100% { transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .loader-fade-out {
-          opacity: 0 !important;
-        }
-      `}</style>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

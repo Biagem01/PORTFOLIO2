@@ -14,34 +14,84 @@ export default function CustomCursor() {
   >("default");
 
   useEffect(() => {
-    const move = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+    // Throttle con rAF per non eseguire DOM query ad ogni mousemove
+    let rafId: number | null = null;
+    // non riassegniamo `latest`, quindi può essere `const` — mutiamo solo le sue proprietà
+    const latest = { x: 0, y: 0, target: null as HTMLElement | null };
 
-      const target = e.target as HTMLElement;
+    const process = () => {
+      const px = latest.x;
+      const py = latest.y;
+      const target = latest.target;
 
-      // 👉 Pagina dettagli: cursore SEMPRE arancione senza testo
-      if (target.closest("[data-cursor='details']")) {
-        setVariant("details");
-        return;
+      cursorX.set(px);
+      cursorY.set(py);
+
+      // elementi visivi sotto il puntatore (anche se pointer-events: none)
+      const elems = (document.elementsFromPoint(px, py) || []) as Element[];
+
+      // PRIORITÀ: details sempre prima
+      for (const el of elems) {
+        const elh = el as HTMLElement;
+        if (elh.closest && elh.closest("[data-cursor='details']")) {
+          setVariant("details");
+          rafId = null;
+          return;
+        }
       }
 
-      if (target.closest("[data-cursor='hide']")) {
+      // poi hide
+      for (const el of elems) {
+        const elh = el as HTMLElement;
+        if (elh.closest && elh.closest("[data-cursor='hide']")) {
+          setVariant("hidden");
+          rafId = null;
+          return;
+        }
+      }
+
+      // fallback: usa target (utile quando overlay ha pointer-events:auto)
+      if (target && target.closest("[data-cursor='hide']")) {
         setVariant("hidden");
-      } else if (target.closest("[data-cursor='small']")) {
-        setVariant("small");
-      } else if (target.closest("[data-cursor='view']")) {
+      } else if (target && target.closest("[data-cursor='view']")) {
         setVariant("view");
-      } else if (target.closest("[data-cursor='big']")) {
+      } else if (target && target.closest("[data-cursor='small']")) {
+        setVariant("small");
+      } else if (target && target.closest("[data-cursor='big']")) {
         setVariant("big");
       } else {
         setVariant("default");
       }
+
+      rafId = null;
+    };
+
+    const move = (e: MouseEvent) => {
+      latest.x = e.clientX;
+      latest.y = e.clientY;
+      latest.target = e.target as HTMLElement | null;
+
+      if (rafId == null) {
+        rafId = requestAnimationFrame(process);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      setVariant("hidden");
     };
 
     window.addEventListener("mousemove", move);
-    return () => window.removeEventListener("mousemove", move);
-  }, []);
+    window.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    };
+  }, [cursorX, cursorY]);
 
   const isDetails = variant === "details";
 
@@ -75,11 +125,8 @@ export default function CustomCursor() {
 
         borderRadius: "999px",
 
-       // 👉 Colore brand aggiornato
         backgroundColor: "rgb(235, 89, 57)",
 
-        // 👉 SE siamo nella pagina dettagli → NO blend mode
-        // 👉 Altrimenti, effetto figo di difference
         mixBlendMode: isDetails ? "normal" : variant === "view" ? "normal" : "difference",
       }}
       transition={{
@@ -88,7 +135,6 @@ export default function CustomCursor() {
         damping: 26,
       }}
     >
-      {/* Testo solo nella home → view details */}
       {variant === "view" && !isDetails && (
         <span className="pointer-events-none text-[14px] text-black">
           VIEW DETAILS
