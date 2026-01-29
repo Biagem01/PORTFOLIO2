@@ -198,11 +198,11 @@ function WipeProjectSlide({
   const [videoReady, setVideoReady] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
-  // Smooth progress - optimized for less initial lag
+  // Smooth progress
   const smoothProgress = useSpring(progress, {
-    stiffness: 80,
-    damping: 28,
-    mass: 0.6,
+    stiffness: 140,
+    damping: 30,
+    mass: 0.9,
   });
 
   const start = index / total;
@@ -240,47 +240,43 @@ function WipeProjectSlide({
   const outStart = start + span * 0.45;
   const outEnd = start + span;
 
-  // opacity - first slide starts more visible to reduce perceived lag
+  // opacity
   const wipeOpacity = useTransform(
     smoothProgress,
     [inStart, inEnd, outStart, outEnd],
     isFirst
-      ? [0.85, 1, 1, 0] // First slide starts nearly visible
+      ? [0.55, 1, 1, 0]
       : [0, 1, 1, 0]
   );
 
-  // entrance from right - reduced travel distance for smoother feel
+  // entrance from right
   const wipeX = useTransform(
     smoothProgress,
     [inStart, inEnd, outStart, outEnd],
     isFirst
-      ? [120, 0, 0, -180] // Reduced initial offset for first slide
-      : [180, 0, 0, -180]
+      ? [320, 0, 0, -220]
+      : [220, 0, 0, -220]
   );
 
   const wipeY = useTransform(
     smoothProgress,
     [inStart, inEnd, outStart, outEnd],
-    isFirst
-      ? [60, 0, 0, -100] // Reduced vertical travel for first slide
-      : [100, 0, 0, -100]
+    [140, 0, 0, -140]
   );
 
   const wipeScale = useTransform(
     smoothProgress,
     [inStart, inEnd, outStart, outEnd],
-    isFirst
-      ? [1.02, 1.0, 1.0, 0.98] // Subtle scale for first slide
-      : [1.05, 1.0, 1.0, 0.98]
+    [1.1, 1.0, 1.0, 0.99]
   );
 
-  // blur: reduced for smoother performance
+  // blur
   const blur = useTransform(
     smoothProgress,
-    [inStart, isFirst ? start + span * 0.15 : inStart, outStart, outEnd],
+    [inStart, isFirst ? start + span * 0.18 : inStart, outStart, outEnd],
     isFirst
-      ? [6, 0, 0, 3] // Lighter blur for better performance
-      : [0, 0, 0, 3]
+      ? [14, 0, 0, 4]
+      : [0, 0, 0, 4]
   );
   const filter = useMotionTemplate`blur(${blur}px)`;
 
