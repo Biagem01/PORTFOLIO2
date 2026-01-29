@@ -274,27 +274,6 @@ function WipeProjectSlide({
       : [1.05, 1.0, 1.0, 0.98]
   );
 
-  // entrance from right
-  const wipeX = useTransform(
-    smoothProgress,
-    [inStart, inEnd, outStart, outEnd],
-    isFirst
-      ? [320, 0, 0, -220] // 01 più “lontano” e visibile
-      : [220, 0, 0, -220]
-  );
-
-  const wipeY = useTransform(
-    smoothProgress,
-    [inStart, inEnd, outStart, outEnd],
-    [140, 0, 0, -140]
-  );
-
-  const wipeScale = useTransform(
-    smoothProgress,
-    [inStart, inEnd, outStart, outEnd],
-    [1.1, 1.0, 1.0, 0.99]
-  );
-
   // blur: reduced for smoother performance
   const blur = useTransform(
     smoothProgress,
