@@ -4,6 +4,7 @@ import {
   useTransform,
   useMotionTemplate,
   useSpring,
+  useMotionValueEvent,
   type MotionValue,
 } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -29,8 +30,7 @@ const projects: Project[] = [
       "Platform progettata e sviluppata per gestire prodotti, pagamenti e dashboard professionale.",
     tags: ["React", "TypeScript", "Stripe", "Tailwind CSS"],
     video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-    poster:
-      "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1600&q=80",
+    poster: "",
     year: "2024",
     category: "Web Development",
   },
@@ -40,8 +40,7 @@ const projects: Project[] = [
       "Dashboard real-time con data visualization, filtri avanzati e animazioni dinamiche.",
     tags: ["Next.js", "Chart.js", "PostgreSQL"],
     video: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/beer.mp4",
-    poster:
-      "https://images.unsplash.com/photo-1521790945508-bf2a36314e85?auto=format&fit=crop&w=1600&q=80",
+    poster: "",
     year: "2024",
     category: "Data Visualization",
   },
@@ -51,12 +50,90 @@ const projects: Project[] = [
       "App social completa con feed, gestione profili, chat in tempo reale e micro-animazioni.",
     tags: ["React", "Firebase", "Framer Motion"],
     video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-    poster:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+    poster: "",
     year: "2023",
     category: "Mobile & Web",
   },
 ];
+
+/* -------------------------------------------
+   HELPERS
+------------------------------------------- */
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const smoothstep = (t: number) => t * t * (3 - 2 * t);
+
+/** progress locale 0..1 per una slide i-esima */
+function getLocalProgress(p: number, index: number, total: number) {
+  const span = 1 / total;
+  const start = index / total;
+
+  // preroll leggero per evitare "stacchi" al primo frame
+  const pre = index === 0 ? span * 0.18 : span * 0.12;
+  return clamp01((p - (start - pre)) / (span + pre));
+}
+
+/** rimappa t in una finestra [a..b] -> 0..1 */
+function range01(t: number, a: number, b: number) {
+  return clamp01((t - a) / (b - a));
+}
+
+/* -------------------------------------------
+   DESCRIPTION ACCENT (italic + orange hits)
+------------------------------------------- */
+function AccentDescription({ text }: { text: string }) {
+  const words = text.split(" ");
+
+  const hot = new Set([
+    "gestire",
+    "prodotti,",
+    "pagamenti,",
+    "pagamenti",
+    "dashboard",
+    "real-time",
+    "visualization,",
+    "visualization",
+    "filtri",
+    "avanzati",
+    "animazioni",
+    "dinamiche.",
+    "dinamiche",
+    "chat",
+    "tempo",
+    "reale",
+    "micro-animazioni.",
+    "micro-animazioni",
+    "profili,",
+    "profili",
+    "feed,",
+    "feed",
+  ]);
+
+  return (
+    <>
+      {words.map((w, idx) => {
+        const clean = w.replace(/[.,]/g, "");
+        const isHot = hot.has(w) || hot.has(clean);
+
+        return (
+          <span
+            key={`${w}-${idx}`}
+            data-cursor="hide"
+            className={
+              isHot
+                ? "text-[rgb(var(--hero-orange))] font-semibold"
+                : "text-[rgb(var(--hero-gold))]/85 font-normal"
+            }
+          >
+            {w}
+            {idx < words.length - 1 ? " " : ""}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 
 /* -------------------------------------------
    MAIN
@@ -65,7 +142,6 @@ export default function Projects() {
   const headerRef = useRef<HTMLDivElement | null>(null);
   const wrapperRef = useRef<HTMLElement | null>(null);
 
-  // header anims
   const { scrollYProgress: headerProgress } = useScroll({
     target: headerRef,
     offset: ["start 80%", "end 20%"],
@@ -74,7 +150,7 @@ export default function Projects() {
   const titleOpacity = useTransform(headerProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
   const titleBlur = useTransform(headerProgress, [0, 0.2, 0.45], [18, 10, 0]);
   const titleLift = useTransform(headerProgress, [0, 0.3, 0.7], [80, 30, 0]);
-  const letterSpacing = useTransform(headerProgress, [0, 0.25, 0.7], [16, 10, 4]);
+  const letterSpacing = useTransform(headerProgress, [0, 0.25, 0.7], [10, 6, 2]);
 
   const haloOpacity = useTransform(headerProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
   const haloScale = useTransform(headerProgress, [0.1, 0.8], [0.75, 1.2]);
@@ -83,10 +159,23 @@ export default function Projects() {
   const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
   const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
 
-  // progress globale per le slide
   const { scrollYProgress } = useScroll({
     target: wrapperRef,
     offset: ["start start", "end end"],
+  });
+
+  const smoothGlobal = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 30,
+    mass: 1.25,
+  });
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  useMotionValueEvent(smoothGlobal, "change", (p) => {
+    const n = projects.length;
+    const clamped = clamp01(p);
+    const scaled = clamped * (n - 1);
+    setActiveIndex(Math.round(scaled));
   });
 
   return (
@@ -123,7 +212,17 @@ export default function Projects() {
                   y: titleLift,
                   letterSpacing: letterSpacingPx,
                 }}
-                className="relative text-[2.5rem] md:text-[3.75rem] lg:text-[4.75rem] font-extrabold tracking-tight leading-[1.05] text-[hsl(var(--scroll-indicator))] flex gap-4 uppercase"
+                className="
+                  relative
+                  font-extrabold
+                  uppercase
+                  leading-[0.95]
+                  tracking-tight
+                  text-[hsl(var(--scroll-indicator))]
+                  flex flex-wrap items-center justify-center
+                  gap-x-3 gap-y-1
+                  text-[clamp(2.15rem,10vw,4.75rem)]
+                "
               >
                 <span className="text-[hsl(var(--accent-orange))]/85">FEATURED</span>
                 <span className="text-[hsl(var(--scroll-indicator))]">PROJECTS</span>
@@ -158,18 +257,16 @@ export default function Projects() {
       >
         <div 
           className="sticky top-0 h-screen w-full overflow-hidden bg-black"
-          style={{ 
-            willChange: "transform",
-            contain: "layout style paint",
-          }}
+          style={{ contain: "layout style paint" }}
         >
           {projects.map((p, i) => (
-            <WipeProjectSlide
+            <ProjectPlayReelSlide
               key={p.title}
               project={p}
               index={i}
               total={projects.length}
-              progress={scrollYProgress}
+              progress={smoothGlobal}
+              activeIndex={activeIndex}
             />
           ))}
         </div>
@@ -181,122 +278,73 @@ export default function Projects() {
 }
 
 /* -------------------------------------------
-   SINGLE SLIDE (stacked, overlap)
+   PLAY REEL SLIDE
 ------------------------------------------- */
-function WipeProjectSlide({
+function ProjectPlayReelSlide({
   project,
   index,
   total,
   progress,
+  activeIndex,
 }: {
   project: Project;
   index: number;
   total: number;
   progress: MotionValue<number>;
+  activeIndex: number;
 }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [videoReady, setVideoReady] = useState(false);
-  const [videoError, setVideoError] = useState(false);
+  const vref = useRef<HTMLVideoElement | null>(null);
+  const [ready, setReady] = useState(false);
 
-  // Smooth progress
-  const smoothProgress = useSpring(progress, {
-    stiffness: 140,
-    damping: 30,
-    mass: 0.9,
+  const localRaw = useTransform(progress, (p) => getLocalProgress(p, index, total));
+  const local = useTransform(localRaw, (t) => smoothstep(t));
+
+  const appearT = useTransform(local, (t) => smoothstep(range01(t, 0.0, 0.12)));
+  const growT = useTransform(local, (t) => smoothstep(range01(t, 0.12, 0.72)));
+  const exitT = useTransform(local, (t) => smoothstep(range01(t, 0.84, 1.0)));
+
+  const slideOpacity = useTransform(
+    [appearT, exitT] as const,
+    ([a, e]: [number, number]) => {
+      if (!ready) return 0;
+      return a * (1 - e);
+    }
+  );
+
+  const widthVw = useTransform(growT, (t) => lerp(58, 100, t));
+  const heightVh = useTransform(growT, (t) => lerp(42, 100, t));
+  const radiusPx = useTransform(growT, (t) => lerp(28, 0, t));
+  const shadowOpacity = useTransform(growT, (t) => lerp(0.65, 0.0, t));
+
+  const w = useTransform(widthVw, (v) => `${v}vw`);
+  const h = useTransform(heightVh, (v) => `${v}vh`);
+  const r = useTransform(radiusPx, (v) => `${v}px`);
+
+  const panX = useTransform(growT, (t) => lerp(14, 0, t));
+  const panY = useTransform(growT, (t) => lerp(18, 0, t));
+  const zoom = useTransform(growT, (t) => lerp(1.04, 1.0, t));
+
+  const grade = useTransform(growT, (t) => {
+    const sat = 1 + 0.18 * (1 - t);
+    const cont = 1 + 0.08 * (1 - t);
+    const bright = 1 - 0.05 * (1 - t);
+    return `saturate(${sat}) contrast(${cont}) brightness(${bright})`;
   });
 
-  const start = index / total;
-  const end = (index + 1) / total;
-  const span = 1 / total;
+  const sweepOpacity = useTransform(growT, (t) => 0.18 * (1 - t));
+  const sweepX = useTransform(growT, (t) => `${-30 + 160 * t}%`);
 
-  // 🔥 video "warm": prova a farlo partire subito (soprattutto per 01)
- useEffect(() => {
-  const v = videoRef.current;
-  if (!v || videoError) return;
-
-  // forza il browser a iniziare buffering asap
-  try {
-    v.load();
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.debug("video.load() blocked/failed:", err);
-  }
-
-  v.play().catch((err) => {
-    // autoplay policy: può bloccare il play (ok, lo gestiamo)
-    // eslint-disable-next-line no-console
-    console.debug("video.play() blocked/failed:", err);
+  const textOpacity = useTransform(local, (t) => {
+    const on = smoothstep(range01(t, 0.18, 0.36));
+    const off = 1 - smoothstep(range01(t, 0.86, 1.0));
+    return on * off;
   });
-}, [videoError]);
 
-  // --------- TIMING WIPE ----------
-  // 01: deve partire SUBITO (progress ~0), quindi anticipiamo l'entrata sotto 0
-  // 02/03: rimangono come prima (perfette)
-  const isFirst = index === 0;
+  const textY = useTransform(growT, (t) => lerp(12, 0, t));
+  const textBlur = useTransform(growT, (t) => lerp(10, 0, t));
+  const textFilter = useMotionTemplate`blur(${textBlur}px)`;
 
-  const inStart = isFirst ? -0.18 : start;
-  const inEnd = isFirst ? start + span * 0.55 : start + span * 0.55;
-
-  const outStart = start + span * 0.45;
-  const outEnd = start + span;
-
-  // opacity
-  const wipeOpacity = useTransform(
-    smoothProgress,
-    [inStart, inEnd, outStart, outEnd],
-    isFirst
-      ? [0.55, 1, 1, 0]
-      : [0, 1, 1, 0]
-  );
-
-  // entrance from right
-  const wipeX = useTransform(
-    smoothProgress,
-    [inStart, inEnd, outStart, outEnd],
-    isFirst
-      ? [320, 0, 0, -220]
-      : [220, 0, 0, -220]
-  );
-
-  const wipeY = useTransform(
-    smoothProgress,
-    [inStart, inEnd, outStart, outEnd],
-    [140, 0, 0, -140]
-  );
-
-  const wipeScale = useTransform(
-    smoothProgress,
-    [inStart, inEnd, outStart, outEnd],
-    [1.1, 1.0, 1.0, 0.99]
-  );
-
-  // blur
-  const blur = useTransform(
-    smoothProgress,
-    [inStart, isFirst ? start + span * 0.18 : inStart, outStart, outEnd],
-    isFirst
-      ? [14, 0, 0, 4]
-      : [0, 0, 0, 4]
-  );
-  const filter = useMotionTemplate`blur(${blur}px)`;
-
-  // testo
-  const textOpacity = useTransform(
-    smoothProgress,
-    [
-      (isFirst ? start : inStart) + span * 0.22,
-      (isFirst ? start : inStart) + span * 0.38,
-      outStart - span * 0.04,
-      outEnd - span * 0.01,
-    ],
-    [0, 1, 1, 0]
-  );
-
-  const textY = useTransform(
-    smoothProgress,
-    [(isFirst ? start : inStart) + span * 0.22, (isFirst ? start : inStart) + span * 0.38, outEnd],
-    [18, 0, -10]
-  );
+  const boxShadow = useMotionTemplate`0 30px 120px rgba(0,0,0,${shadowOpacity})`;
 
   const projectNumber = useMemo(() => String(index + 1).padStart(2, "0"), [index]);
 
@@ -305,133 +353,233 @@ function WipeProjectSlide({
     window.location.href = `/project/${slug}`;
   };
 
+  useEffect(() => {
+    const v = vref.current;
+    if (!v) return;
+
+    const shouldBeHot = Math.abs(index - activeIndex) <= 1;
+    if (shouldBeHot) {
+      if (v.preload !== "auto") v.preload = "auto";
+      v.play().catch(() => undefined);
+    } else {
+      if (!v.paused) v.pause();
+      if (v.preload !== "metadata") v.preload = "metadata";
+    }
+  }, [activeIndex, index]);
+
+  useEffect(() => {
+    const v = vref.current;
+    if (!v) return;
+    v.preload = index === 0 ? "auto" : "metadata";
+    v.play().catch(() => undefined);
+  }, [index]);
+
   return (
-    <div className="absolute inset-0">
-      {/* VIDEO LAYER - GPU accelerated */}
+    <motion.div
+      className="absolute inset-0"
+      style={{
+        opacity: slideOpacity,
+        pointerEvents: activeIndex === index ? "auto" : "none",
+        zIndex: activeIndex === index ? 20 : 0,
+      }}
+    >
       <motion.div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute left-1/2 top-1/2 z-[10] overflow-hidden"
         style={{
-          opacity: wipeOpacity,
-          x: wipeX,
-          y: wipeY,
-          scale: wipeScale,
-          filter,
-          zIndex: index + 1,
-          willChange: "transform, opacity",
-          backfaceVisibility: "hidden",
-          perspective: 1000,
+          width: w,
+          height: h,
+          borderRadius: r,
+          x: "-50%",
+          y: "-50%",
+          boxShadow,
+          transform: "translateZ(0)",
+          willChange: "width, height, border-radius",
         }}
       >
-        {!videoError && (
-          <video
-            ref={videoRef}
-            src={project.video}
-            className="absolute inset-0 h-full w-full object-cover"
-            muted
-            loop
-            playsInline
-            preload={isFirst ? "auto" : "metadata"}
-            poster={project.poster} // (non è "immagine dietro": è solo fallback del tag video)
-            onCanPlay={() => setVideoReady(true)}
-            onError={() => setVideoError(true)}
-            // @ts-expect-error fetchpriority non tipizzato
-            fetchpriority={isFirst ? "high" : "auto"}
-            style={{
-              opacity: videoReady ? 1 : 0,
-              transition: "opacity 180ms ease-out",
-              transform: "translate3d(0, 0, 0)",
-              willChange: "opacity",
-            }}
-          />
-        )}
-
-        {/* se il video non è ancora pronto, niente foto: solo look cinematic */}
-        {(!videoReady || videoError) && (
-          <div className="absolute inset-0 bg-black" />
-        )}
-
-        {/* overlays cinematic */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-transparent" />
-      </motion.div>
-
-      {/* overlay click SOLO video */}
-      <motion.button
-        type="button"
-        aria-label={`View details for ${project.title}`}
-        className="absolute inset-0 z-[60] cursor-pointer"
-        data-cursor="view"
-        onClick={goToProject}
-        style={{ border: "none", background: "transparent", padding: 0 }}
-      />
-
-      {/* BIG NUMBER */}
-      <motion.span
-        className="
-          absolute right-6 md:right-14 top-10 md:top-14
-          text-[6rem] md:text-[10rem] lg:text-[13rem]
-          font-extralight select-none pointer-events-none
-        "
-        style={{
-          opacity: textOpacity,
-          color: "rgba(235, 89, 57, 0.42)",
-          WebkitTextStroke: "2px rgba(235, 89, 57, 0.85)",
-          textShadow: `
-            0 0 35px rgba(235, 89, 57, 0.60),
-            0 0 80px rgba(235, 89, 57, 0.28)
-          `,
-          zIndex: total + 10,
-        }}
-      >
-        {projectNumber}
-      </motion.span>
-
-      {/* CONTENT RIGHT */}
-      <motion.div
-        className="absolute bottom-14 md:bottom-20 right-6 md:right-14 z-[80] max-w-2xl text-right pointer-events-auto"
-        data-cursor="hide"
-        style={{ 
-          opacity: textOpacity, 
-          y: textY,
-          willChange: "transform, opacity",
-        }}
-      >
-        <div className="flex items-center justify-end gap-4 mb-4">
-          <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-[hsl(var(--accent-orange))]/85">
-            {project.category}
-          </span>
-          <span className="w-8 h-px bg-white/30" />
-          <span className="text-xs uppercase tracking-[0.2em] text-white/70">
-            {project.year}
-          </span>
-        </div>
-
-        <h3 className="text-4xl md:text-6xl lg:text-7xl text-white tracking-tight leading-[1.05] font-extrabold">
-          {project.title}
-        </h3>
-
-        <p className="mt-5 text-sm md:text-base max-w-md ml-auto leading-[1.7] text-white/70 font-normal tracking-wide">
-          {project.description}
-        </p>
-
-        <div className="flex flex-wrap justify-end mt-6 gap-2">
-          {project.tags.map((tag) => (
-            <span
-              key={tag}
-              className="px-4 py-2 text-xs uppercase tracking-[0.15em] rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-white/90 font-medium"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <button
-          className="mt-7 inline-flex items-center justify-end gap-2 text-sm font-semibold text-white/85 hover:text-white transition"
+        <motion.button
+          type="button"
+          aria-label={`View details for ${project.title}`}
           onClick={goToProject}
+          data-cursor="view"
+          className="absolute inset-0 cursor-pointer"
+          style={{
+            border: "none",
+            background: "transparent",
+            padding: 0,
+            zIndex: 99999,
+            pointerEvents: "auto",
+          }}
+        />
+
+        <motion.video
+          ref={vref}
+          src={project.video}
+          className="absolute inset-0 h-full w-full object-cover"
+          muted
+          loop
+          playsInline
+          preload={index === 0 ? "auto" : "metadata"}
+          onCanPlay={() => setReady(true)}
+          style={{
+            filter: grade,
+            x: panX,
+            y: panY,
+            scale: zoom,
+            transform: "translateZ(0)",
+            willChange: "transform, filter",
+          }}
+        />
+
+        <motion.div
+          className="absolute inset-[-25%] rotate-[-18deg] pointer-events-none"
+          style={{
+            opacity: sweepOpacity,
+            left: sweepX,
+            background:
+              "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(235,89,57,0.45) 45%, rgba(255,255,255,0) 75%)",
+            mixBlendMode: "screen",
+            filter: "blur(10px)",
+            transform: "translateZ(0)",
+          }}
+        />
+
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-black/55 via-transparent to-transparent" />
+        <div className="absolute inset-0 pointer-events-none bg-black/10" />
+
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.07]"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E\")",
+            mixBlendMode: "overlay",
+          }}
+        />
+
+        {/* TEXT OVERLAY */}
+        <motion.div
+          data-cursor="hide"
+          className="absolute inset-0 z-[70] pointer-events-none"
+          style={{ opacity: textOpacity }}
         >
-          View Project <ArrowUpRight className="w-4 h-4" />
-        </button>
+          {/* NUMBER */}
+          <motion.span
+            data-cursor="hide"
+            className="absolute right-6 md:right-10 top-6 md:top-10 text-[4.25rem] md:text-[7rem] lg:text-[9rem] font-extralight select-none pointer-events-none"
+            style={{
+              opacity: textOpacity,
+              color: "rgba(235, 89, 57, 0.32)",
+              WebkitTextStroke: "2px rgba(235, 89, 57, 0.78)",
+              textShadow:
+                "0 0 35px rgba(235, 89, 57, 0.55), 0 0 80px rgba(235, 89, 57, 0.18)",
+            }}
+          >
+            {projectNumber}
+          </motion.span>
+
+          {/* DETAILS */}
+          <motion.div
+            data-cursor="hide"
+            className="absolute bottom-7 md:bottom-10 right-6 md:right-10 max-w-2xl text-right"
+            style={{ y: textY, filter: textFilter }}
+          >
+            {/* META */}
+            <div className="flex items-center justify-end gap-4 mb-3 pointer-events-none">
+              <span className="text-xs uppercase tracking-[0.22em] font-black text-[rgb(var(--hero-orange))]">
+                {project.category}
+              </span>
+              <span className="w-8 h-px bg-[rgb(var(--hero-gold))]/25" />
+              <span className="text-xs uppercase tracking-[0.22em] font-light text-[rgb(var(--hero-gold))]/70">
+                {project.year}
+              </span>
+            </div>
+
+            {/* TITLE */}
+            <h3
+              className="
+                font-black tracking-tight [text-wrap:balance]
+                leading-[1.02] sm:leading-[0.98] lg:leading-[0.95]
+                text-[clamp(2.1rem,8.5vw,4.75rem)]
+                text-[rgb(var(--hero-gold))]
+                pointer-events-none
+              "
+            >
+              {project.title}
+            </h3>
+
+            {/* DESCRIPTION */}
+            <div className="mt-4 ml-auto max-w-[34rem] pointer-events-none">
+              <div className="mb-3 flex justify-end">
+                <span className="h-px w-14 bg-[rgb(var(--hero-orange))]/65 shadow-[0_0_22px_rgba(235,89,57,0.30)]" />
+              </div>
+
+              <div
+                className="
+                  inline-block rounded-2xl
+                  border border-[rgb(var(--hero-gold))]/14
+                  bg-[linear-gradient(145deg,rgba(255,255,255,0.05),rgba(0,0,0,0.18))]
+                  backdrop-blur-md px-5 py-4
+                  shadow-[0_22px_70px_rgba(0,0,0,0.55)]
+                "
+              >
+                <p
+                  className="
+                    text-right
+                    text-sm md:text-[0.95rem] lg:text-base
+                    leading-[1.65] tracking-wide
+                    font-normal
+                    text-[rgb(var(--hero-gold))]/80
+                    [text-shadow:0_10px_26px_rgba(0,0,0,0.55)]
+                  "
+                >
+                  <AccentDescription text={project.description} />
+                </p>
+
+                <div className="mt-3 flex justify-end items-center gap-3">
+                  <span className="h-px w-16 bg-[rgb(var(--hero-gold))]/14" />
+                  <span className="h-[6px] w-[6px] rounded-full bg-[rgb(var(--hero-orange))]/75 shadow-[0_0_18px_rgba(235,89,57,0.35)]" />
+                </div>
+              </div>
+            </div>
+
+            {/* TAGS */}
+            <div className="flex flex-wrap justify-end mt-5 gap-2 pointer-events-none"
+            data-cursor="hide"
+            >
+              {project.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="
+                    px-3.5 py-2
+                    text-[0.68rem] uppercase tracking-[0.15em]
+                    rounded-full
+                    border border-[rgb(var(--hero-gold))]/22
+                    bg-white/5
+                    text-[rgb(var(--hero-gold))]/90
+                    font-medium
+                  "
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <button
+              type="button"
+              onClick={goToProject}
+              data-cursor="hide"
+              className="mt-6 inline-flex items-center gap-2 pointer-events-auto"
+            >
+              <span className="relative">
+                View Project
+                <span className="absolute left-0 -bottom-1 h-px w-full bg-[rgb(var(--hero-orange))]/45" />
+              </span>
+              <ArrowUpRight className="w-4 h-4 text-[rgb(var(--hero-orange))]" />
+            </button>
+          </motion.div>
+        </motion.div>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
