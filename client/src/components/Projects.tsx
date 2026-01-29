@@ -156,7 +156,13 @@ export default function Projects() {
         className="relative"
         style={{ height: `${projects.length * 260}vh` }}
       >
-        <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
+        <div 
+          className="sticky top-0 h-screen w-full overflow-hidden bg-black"
+          style={{ 
+            willChange: "transform",
+            contain: "layout style paint",
+          }}
+        >
           {projects.map((p, i) => (
             <WipeProjectSlide
               key={p.title}
@@ -192,11 +198,11 @@ function WipeProjectSlide({
   const [videoReady, setVideoReady] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
-  // Smooth progress
+  // Smooth progress - optimized for less initial lag
   const smoothProgress = useSpring(progress, {
-    stiffness: 140,
-    damping: 30,
-    mass: 0.9,
+    stiffness: 80,
+    damping: 28,
+    mass: 0.6,
   });
 
   const start = index / total;
@@ -234,13 +240,38 @@ function WipeProjectSlide({
   const outStart = start + span * 0.45;
   const outEnd = start + span;
 
-  // opacity
+  // opacity - first slide starts more visible to reduce perceived lag
   const wipeOpacity = useTransform(
     smoothProgress,
     [inStart, inEnd, outStart, outEnd],
     isFirst
-      ? [0.55, 1, 1, 0] // ✅ 01 non è mai 0 quando arrivi
+      ? [0.85, 1, 1, 0] // First slide starts nearly visible
       : [0, 1, 1, 0]
+  );
+
+  // entrance from right - reduced travel distance for smoother feel
+  const wipeX = useTransform(
+    smoothProgress,
+    [inStart, inEnd, outStart, outEnd],
+    isFirst
+      ? [120, 0, 0, -180] // Reduced initial offset for first slide
+      : [180, 0, 0, -180]
+  );
+
+  const wipeY = useTransform(
+    smoothProgress,
+    [inStart, inEnd, outStart, outEnd],
+    isFirst
+      ? [60, 0, 0, -100] // Reduced vertical travel for first slide
+      : [100, 0, 0, -100]
+  );
+
+  const wipeScale = useTransform(
+    smoothProgress,
+    [inStart, inEnd, outStart, outEnd],
+    isFirst
+      ? [1.02, 1.0, 1.0, 0.98] // Subtle scale for first slide
+      : [1.05, 1.0, 1.0, 0.98]
   );
 
   // entrance from right
@@ -264,13 +295,13 @@ function WipeProjectSlide({
     [1.1, 1.0, 1.0, 0.99]
   );
 
-  // blur: 01 parte BLURRATO e si pulisce
+  // blur: reduced for smoother performance
   const blur = useTransform(
     smoothProgress,
-    [inStart, isFirst ? start + span * 0.18 : inStart, outStart, outEnd],
+    [inStart, isFirst ? start + span * 0.15 : inStart, outStart, outEnd],
     isFirst
-      ? [14, 0, 0, 4] // ✅ blur forte all’inizio SOLO per 01
-      : [0, 0, 0, 4]
+      ? [6, 0, 0, 3] // Lighter blur for better performance
+      : [0, 0, 0, 3]
   );
   const filter = useMotionTemplate`blur(${blur}px)`;
 
@@ -301,9 +332,9 @@ function WipeProjectSlide({
 
   return (
     <div className="absolute inset-0">
-      {/* VIDEO LAYER */}
+      {/* VIDEO LAYER - GPU accelerated */}
       <motion.div
-        className="absolute inset-0 pointer-events-none will-change-transform"
+        className="absolute inset-0 pointer-events-none"
         style={{
           opacity: wipeOpacity,
           x: wipeX,
@@ -311,7 +342,9 @@ function WipeProjectSlide({
           scale: wipeScale,
           filter,
           zIndex: index + 1,
-          transform: "translateZ(0)",
+          willChange: "transform, opacity",
+          backfaceVisibility: "hidden",
+          perspective: 1000,
         }}
       >
         {!videoError && (
@@ -330,8 +363,9 @@ function WipeProjectSlide({
             fetchpriority={isFirst ? "high" : "auto"}
             style={{
               opacity: videoReady ? 1 : 0,
-              transition: "opacity 220ms ease-out",
-              transform: "translateZ(0)",
+              transition: "opacity 180ms ease-out",
+              transform: "translate3d(0, 0, 0)",
+              willChange: "opacity",
             }}
           />
         )}
@@ -381,7 +415,11 @@ function WipeProjectSlide({
       <motion.div
         className="absolute bottom-14 md:bottom-20 right-6 md:right-14 z-[80] max-w-2xl text-right pointer-events-auto"
         data-cursor="hide"
-        style={{ opacity: textOpacity, y: textY }}
+        style={{ 
+          opacity: textOpacity, 
+          y: textY,
+          willChange: "transform, opacity",
+        }}
       >
         <div className="flex items-center justify-end gap-4 mb-4">
           <span className="text-xs uppercase font-extrabold tracking-[0.2em] text-[hsl(var(--accent-orange))]/85">
@@ -397,7 +435,7 @@ function WipeProjectSlide({
           {project.title}
         </h3>
 
-        <p className="mt-5 text-base md:text-lg max-w-lg ml-auto leading-relaxed text-white/80 font-light">
+        <p className="mt-5 text-sm md:text-base max-w-md ml-auto leading-[1.7] text-white/70 font-normal tracking-wide">
           {project.description}
         </p>
 
