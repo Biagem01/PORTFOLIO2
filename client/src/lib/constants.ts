@@ -22,7 +22,7 @@ export const PROJECTS = [
     title: "Movie Review",
     category: "Full Stack Development",
     description: "A comprehensive platform for reviewing cinema and television series with interactive user ratings.",
-    video: "/videos/donna-tramonto.mp4",
+    video: "/videos/donna-tramonto.webm",
     year: "2024",
     role: "Lead Developer",
     services: ["Web Design", "App Development", "UI/UX Design"],
