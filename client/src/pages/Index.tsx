@@ -1,15 +1,18 @@
+import { useLocation } from "wouter";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
-import Projects from "@/components/Projects";
+import { Projects } from "@/components/Projects";
+import SectionDivider from "@/components/SectionDivider";
 import ViewAllProjects from "@/components/ViewAllProjects";
 import Education from "@/components/Education";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import FloatingSocials from "@/components/FloatingSocials";
 
-
 const Index = () => {
+  const [location] = useLocation();
+
   return (
     <div className="relative">
       <Navbar />
@@ -20,6 +23,10 @@ const Index = () => {
       <div id="about">
         <About />
       </div>
+
+      {/* Divider "Selected Works" tra About e Projects */}
+      <SectionDivider />
+
       <div id="projects">
         <Projects />
       </div>
@@ -27,7 +34,7 @@ const Index = () => {
         <ViewAllProjects />
       </div>
       <div id="education">
-        <Education />
+        <Education key={location} />
       </div>
       <div id="contact">
         <Contact />

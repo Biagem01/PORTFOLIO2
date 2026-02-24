@@ -1,319 +1,483 @@
 import {
   motion,
-  Variants,
-  Transition,
-  Easing,
   useScroll,
   useTransform,
   useMotionTemplate,
+  useSpring,
+  MotionValue,
+  AnimatePresence,
 } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 
+// ─── Custom Types ─────────────────────────────────────────────────────────────
 interface EducationItem {
   institution: string;
-  date: string;
+  year: string;
   title: string;
   description: string;
   details: string[];
+  location: string;
 }
 
-const Education = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start 80%", "end 20%"],
-  });
+interface SlideProps {
+  item: EducationItem;
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
+}
 
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.2, 0.45], [0, 0.6, 1]);
-  const titleBlur = useTransform(scrollYProgress, [0, 0.2, 0.45], [18, 10, 0]);
-  const titleLift = useTransform(scrollYProgress, [0, 0.3, 0.7], [80, 30, 0]);
-  const letterSpacing = useTransform(scrollYProgress, [0, 0.25, 0.7], [18, 10, 2]);
-  const haloOpacity = useTransform(scrollYProgress, [0.1, 0.4, 1], [0, 0.4, 0.8]);
-  const haloScale = useTransform(scrollYProgress, [0.1, 0.8], [0.75, 1.2]);
-  const ghostOpacity = useTransform(scrollYProgress, [0, 0.2, 0.55], [0.05, 0.2, 0]);
+// ─── Hook per rilevare mobile ─────────────────────────────────────────────────
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
 
-  const blurFilter = useMotionTemplate`blur(${titleBlur}px)`;
-  const letterSpacingPx = useMotionTemplate`${letterSpacing}px`;
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
-  const educationItems: EducationItem[] = [
-    {
-      institution: "Università degli Studi",
-      date: "2020 - 2023",
-      title: "Laurea in Ingegneria Informatica",
-      description:
-        "Specializzazione in sviluppo web e applicazioni mobile. Progetti finali focalizzati su architetture moderne e user experience, cloud computing e scalabilità.",
-      details: [
-        "Web Development e Modern Architecture",
-        "Mobile App Development",
-        "UI/UX Design Principles",
-        "Cloud Computing & Scalability",
-      ],
-    },
-    {
-      institution: "Bootcamp Coding Intensivo",
-      date: "2023",
-      title: "Full Stack Development",
-      description:
-        "Corso accelerato su tecnologie moderne per lo sviluppo full stack. Progetti real-world con React, Node.js, PostgreSQL e deployment in produzione.",
-      details: [
-        "React & Modern Frontend",
-        "Node.js Backend Development",
-        "PostgreSQL Database Design",
-        "Deployment & DevOps",
-      ],
-    },
-    {
-      institution: "Online Course",
-      date: "2024",
-      title: "Advanced TypeScript & React",
-      description:
-        "Approfondimento su TypeScript avanzato, pattern di React moderni, performance optimization e testing strategies per applicazioni scalabili.",
-      details: [
-        "TypeScript Advanced Patterns",
-        "React Performance Optimization",
-        "Testing & Quality Assurance",
-        "Architecture Best Practices",
-      ],
-    },
+  return isMobile;
+};
+
+// ─── Animated Year ────────────────────────────────────────────────────────────
+const AnimatedYear = ({ year, isVisible }: { year: string; isVisible: boolean }) => {
+  const [displayed, setDisplayed] = useState("0000");
+  const hasAnimated = useRef(false);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (isVisible) {
+      // Cancella eventuale reset in corso
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+
+      if (!hasAnimated.current) {
+        hasAnimated.current = true;
+        const target = parseInt(year, 10);
+        const start = target - 5;
+        let frame = 0;
+        const totalFrames = 60;
+        const tick = () => {
+          frame++;
+          const p = frame / totalFrames;
+          const eased = 1 - Math.pow(1 - p, 4);
+          setDisplayed(String(Math.round(start + (target - start) * eased)));
+          if (frame < totalFrames) requestAnimationFrame(tick);
+          else setDisplayed(year);
+        };
+        requestAnimationFrame(tick);
+      }
+    } else {
+      // 🔥 FIX: reset hasAnimated con delay dopo che la slide è uscita
+      // così la prossima volta che torna visibile ripartirà l'animazione
+      resetTimer.current = setTimeout(() => {
+        hasAnimated.current = false;
+        setDisplayed("0000");
+      }, 800);
+    }
+
+    return () => {
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+    };
+  }, [isVisible, year]);
+
+  return (
+    <div className="overflow-hidden h-[3rem] flex items-center">
+      <motion.span
+        key={displayed}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.1 }}
+        className="text-2xl md:text-3xl font-mono font-medium text-white/40 tracking-tighter tabular-nums"
+      >
+        {displayed}
+      </motion.span>
+    </div>
+  );
+};
+
+// ─── Alternating colored title ────────────────────────────────────────────────
+const AlternatingTitle = ({ text }: { text: string }) => {
+  const words = text.split(" ");
+  const colors = [
+    "text-[hsl(var(--accent-orange))]",
+    "text-[hsl(var(--scroll-indicator))]",
   ];
+  return (
+    <>
+      {words.map((word, i) => (
+        <span key={i} className={colors[i % 2]}>
+          {word}
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+    </>
+  );
+};
 
-  // Easing corretto per TypeScript
-  const cubicEase: Easing = [0.42, 0, 0.58, 1];
+// ─── Staggered detail ─────────────────────────────────────────────────────────
+const StaggeredDetail = ({ detail, index, isVisible }: { detail: string; index: number; isVisible: boolean }) => (
+  <motion.li
+    initial={{ opacity: 0, y: 10 }}
+    animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+    transition={{ duration: 0.5, delay: 0.4 + index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+    className="text-white/40 text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-medium list-none flex items-center gap-3"
+  >
+    <span className="w-1 h-1 rounded-full bg-[hsl(var(--accent-orange))] flex-shrink-0" />
+    {detail}
+  </motion.li>
+);
 
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.3 } as Transition,
+// ─── Ambient glow ─────────────────────────────────────────────────────────────
+const AmbientGlow = ({ progress, total }: { progress: MotionValue<number>; total: number }) => {
+  const [activeIdx, setActiveIdx] = useState(0);
+  useEffect(() => {
+    return progress.on("change", (v) => setActiveIdx(Math.min(Math.floor(v * total), total - 1)));
+  }, [progress, total]);
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        key={activeIdx}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 1.2 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="absolute inset-0 pointer-events-none overflow-hidden"
+      >
+        <div
+          className="absolute right-[-10%] top-[50%] -translate-y-1/2 w-[60%] h-[60%] rounded-full blur-[120px]"
+          style={{ backgroundColor: "hsl(var(--accent-orange))", opacity: 0.03 }}
+        />
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+// ─── Watermark year ───────────────────────────────────────────────────────────
+const WatermarkYear = ({ items, progress }: { items: EducationItem[]; progress: MotionValue<number> }) => {
+  const [activeYear, setActiveYear] = useState(items[0].year);
+
+  useEffect(() => {
+    return progress.on("change", (v) => {
+      const idx = Math.min(Math.floor(v * items.length), items.length - 1);
+      setActiveYear(items[idx].year);
+    });
+  }, [progress, items]);
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+      <AnimatePresence mode="popLayout">
+        <motion.span
+          key={activeYear}
+          initial={{ y: 100, opacity: 0, scale: 0.9, rotateX: 45 }}
+          animate={{ y: 0, opacity: 1, scale: 1, rotateX: 0 }}
+          exit={{ y: -100, opacity: 0, scale: 1.1, rotateX: -45 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="text-[clamp(5rem,20vw,20rem)] font-black tracking-tighter leading-none text-white/[0.02] select-none tabular-nums font-mono"
+        >
+          {activeYear}
+        </motion.span>
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// ─── Pip indicator ────────────────────────────────────────────────────────────
+const PipIndicator = ({ items, activeIndex }: { items: EducationItem[]; activeIndex: number }) => (
+  <div className="flex flex-row md:flex-col gap-4 items-center">
+    {items.map((_, i) => (
+      <div key={i} className="relative flex items-center justify-center">
+        <motion.div
+          animate={{
+            scale: i === activeIndex ? 1.5 : 1,
+            opacity: i === activeIndex ? 1 : 0.3,
+            backgroundColor: i === activeIndex
+              ? "hsl(var(--accent-orange))"
+              : "rgba(255,255,255,0.4)",
+          }}
+          className="w-1.5 h-1.5 rounded-full"
+        />
+        {i === activeIndex && (
+          <motion.div
+            layoutId="pip-glow"
+            className="absolute inset-0 w-4 h-4 rounded-full bg-[hsl(var(--accent-orange))]/20 blur-sm -z-10"
+          />
+        )}
+      </div>
+    ))}
+  </div>
+);
+
+// ─── Left panel — Desktop only ────────────────────────────────────────────────
+const LeftPanel = ({
+  items,
+  progress,
+  titleY,
+  titleOpacity,
+}: {
+  items: EducationItem[];
+  progress: MotionValue<number>;
+  titleY: MotionValue<number>;
+  titleOpacity: MotionValue<number>;
+}) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    return progress.on("change", (v) => setActiveIndex(Math.min(Math.floor(v * items.length), items.length - 1)));
+  }, [progress, items]);
+
+  return (
+    <div className="hidden md:flex col-span-4 items-center pl-20">
+      <motion.div style={{ y: titleY, opacity: titleOpacity }} className="w-full flex flex-col gap-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-px bg-white/20" />
+          <div className="text-[10px] font-mono tracking-[0.4em] text-white/30 uppercase">Selected Education</div>
+        </div>
+
+        <h2 className="text-6xl font-serif leading-[0.9] tracking-tight" data-cursor="big">
+          <span className="text-white/40 italic">the</span>
+          <br />
+          <span className="text-[hsl(var(--accent-orange))] font-orange font-extrabold">Learning</span>
+          <br />
+          <span className="text-[hsl(var(--scroll-indicator))] font-extrabold">Path</span>
+        </h2>
+
+        <div className="flex flex-col gap-6 max-w-xs">
+          <div className="h-px w-full bg-white/5" />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIndex}
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 20, opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-4"
+            >
+              <div className="text-[10px] font-mono text-white/30 tracking-[0.2em] uppercase">Current Node</div>
+              <p className="text-sm text-white/60 leading-relaxed font-button" data-cursor="big">
+                {items[activeIndex].description}
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-1 rounded-full bg-[hsl(var(--accent-orange))]" />
+                <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{items[activeIndex].location}</span>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <PipIndicator items={items} activeIndex={activeIndex} />
+      </motion.div>
+    </div>
+  );
+};
+
+// ─── Mobile header ────────────────────────────────────────────────────────────
+const MobileHeader = ({
+  items,
+  progress,
+}: {
+  items: EducationItem[];
+  progress: MotionValue<number>;
+}) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    return progress.on("change", (v) => setActiveIndex(Math.min(Math.floor(v * items.length), items.length - 1)));
+  }, [progress, items]);
+
+  return (
+    <div className="flex md:hidden flex-col gap-6 px-6 pt-12 pb-8 bg-black border-b border-white/[0.03] sticky top-0 z-50">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
+          <div className="text-[9px] font-mono tracking-[0.4em] text-white/30 uppercase">02 / Education</div>
+          <h2 className="text-3xl font-serif font-medium tracking-tight">
+            Learning <span className="text-[hsl(var(--accent-orange))] italic">Path</span>
+          </h2>
+        </div>
+        <PipIndicator items={items} activeIndex={activeIndex} />
+      </div>
+    </div>
+  );
+};
+
+// ─── Slide ────────────────────────────────────────────────────────────────────
+const EducationSlide = ({ item, index, total, progress }: SlideProps) => {
+  const start = index / total;
+  const end = (index + 1) / total;
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    return progress.on("change", (v) => setIsVisible(v >= start && v < end));
+  }, [progress, start, end]);
+
+  const opacity   = useTransform(progress, [start - 0.1, start, end - 0.1, end], [0, 1, 1, 0]);
+  const scale     = useTransform(progress, [start - 0.1, start, end - 0.1, end], [0.9, 1, 1, 0.9]);
+  const rotateX   = useTransform(progress, [start - 0.1, start, end - 0.1, end], [20, 0, 0, -20]);
+  const y         = useTransform(progress, [start, end], [60, -60]);
+  const blur      = useTransform(progress, [start - 0.1, start, end - 0.1, end], [20, 0, 0, 20]);
+  const blurStyle = useMotionTemplate`blur(${blur}px)`;
+
+  const contentY = useTransform(progress, [start, start + 0.15], [40, 0]);
+  const lineW    = useTransform(progress, [start + 0.05, start + 0.2], ["0%", "100%"]);
+  const parallax = useTransform(progress, [start, end], [20, -20]);
+
+  return (
+    <motion.div
+      style={{ opacity, scale, rotateX, y, filter: blurStyle, perspective: 1200 }}
+      className={`absolute inset-0 flex items-center justify-center will-change-transform ${isVisible ? "pointer-events-auto" : "pointer-events-none"}`}
+    >
+      <div className="w-full max-w-3xl px-6 md:px-12">
+        <motion.div style={{ y: parallax }} className="flex flex-col gap-10">
+          <div className="flex items-end justify-between">
+            <div className="flex flex-col gap-1">
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={isVisible ? { opacity: 0.3, x: 0 } : { opacity: 0, x: -10 }}
+                className="text-[10px] font-mono uppercase tracking-[0.4em] text-white/40"
+              >
+                Timeframe
+              </motion.span>
+              <AnimatedYear year={item.year} isVisible={isVisible} />
+            </div>
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: 10 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-col items-end gap-1 mb-2"
+            >
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/30">Location</span>
+              <span className="text-xs font-mono text-[hsl(var(--accent-orange))]">{item.location}</span>
+            </motion.div>
+          </div>
+
+          <motion.div style={{ y: contentY }} className="space-y-8">
+            <div className="space-y-4">
+              <motion.h3 className="text-4xl md:text-6xl font-orange tracking-tight leading-[0.95]" data-cursor="big">
+                <AlternatingTitle text={item.institution} />
+              </motion.h3>
+              <div className="flex items-center gap-6">
+                <div className="h-px flex-1 bg-white/10 relative overflow-hidden">
+                  <motion.div
+                    style={{ width: lineW }}
+                    className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--accent-orange))] to-white/20"
+                  />
+                </div>
+                <span className="text-sm md:text-lg font-serif italic text-white/80">{item.title}</span>
+              </div>
+            </div>
+
+            <p className="text-white/50 text-sm leading-relaxed max-w-xl font-button">
+              "{item.description}"
+            </p>
+
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12 pt-4" data-cursor="hide">
+              {item.details.map((d, i) => (
+                <StaggeredDetail key={d} detail={d} index={i} isVisible={isVisible} />
+              ))}
+            </ul>
+          </motion.div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export const Education = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+
+  const educationItems: EducationItem[] = useMemo(() => [
+    {
+      institution: "University of Computer Science",
+      year: "2023",
+      title: "BSc in Computer Engineering",
+      location: "San Francisco, CA",
+      description: "Focused on modern web systems, scalable architectures and user-centered design principles. Graduated with honors in Computational Design.",
+      details: ["Modern Web Architecture", "UI/UX Systems Thinking", "Cloud Infrastructure", "Scalable Systems"],
     },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: cubicEase } as Transition,
+    {
+      institution: "Intensive Coding Program",
+      year: "2023",
+      title: "Full Stack Engineering",
+      location: "New York, NY",
+      description: "Production-level development with real-world projects using modern frontend and backend stacks. Specialized in React performance.",
+      details: ["React Ecosystem", "Node.js Architecture", "Database Modeling", "DevOps Workflows"],
     },
-  };
+    {
+      institution: "Design & Arts Academy",
+      year: "2024",
+      title: "Visual Communications",
+      location: "Remote",
+      description: "Exploration of visual hierarchy, typography, and motion design to bridge the gap between engineering and art.",
+      details: ["Motion Design", "Typography Systems", "Brand Identity", "Design Systems"],
+    },
+  ], []);
+
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 25, mass: 1 });
+
+  const titleY       = useTransform(smoothProgress, [0, 1], [0, -40]);
+  const titleOpacity = useTransform(smoothProgress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+      window.dispatchEvent(new Event("scroll"));
+    }, 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <section
       id="education"
       ref={containerRef}
-      className="relative bg-background min-h-screen flex items-center justify-center px-6 md:px-12 lg:px-20 py-20"
+      className="relative bg-black text-white"
+      style={{ height: `${educationItems.length * (isMobile ? 150 : 200)}vh` }}
     >
-       <div className="max-w-6xl w-full flex flex-col lg:flex-row items-start gap-12 md:gap-20 lg:gap-32">
-        <div className="lg:hidden w-full relative">
-          <motion.div
-            style={{ opacity: haloOpacity, scale: haloScale }}
-            className="pointer-events-none absolute inset-x-1/2 top-[-8px] h-28 w-[22rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
+      <div className="sticky top-0 h-screen overflow-hidden bg-black">
+
+        <WatermarkYear items={educationItems} progress={smoothProgress} />
+        <AmbientGlow progress={smoothProgress} total={educationItems.length} />
+
+        <div className="relative h-full w-full md:grid md:grid-cols-12 z-10">
+          <MobileHeader items={educationItems} progress={smoothProgress} />
+          <LeftPanel
+            items={educationItems}
+            progress={smoothProgress}
+            titleY={titleY}
+            titleOpacity={titleOpacity}
           />
-
-          <motion.h2
-            data-cursor="big"
-            style={{
-              opacity: titleOpacity,
-              filter: blurFilter,
-              y: titleLift,
-              letterSpacing: letterSpacingPx,
-            }}
-            className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight text-[hsl(var(--scroll-indicator))] flex gap-3"
-          >
-            <span className="text-[hsl(var(--scroll-indicator))]">My</span>
-            <span className="text-[hsl(var(--accent-orange))]/80">Education</span>
-          </motion.h2>
-
-          <motion.span
-            aria-hidden
-            style={{ opacity: ghostOpacity, y: titleLift }}
-            className="absolute left-0 top-1/2 -translate-y-1/2 text-5xl font-black tracking-[0.8rem] text-foreground/5 select-none"
-          >
-            MY EDUCATION
-          </motion.span>
+          <div className="col-span-8 relative h-full">
+            <div className="absolute inset-0 flex items-center justify-center">
+              {educationItems.map((item, index) => (
+                <EducationSlide
+                  key={item.institution}
+                  item={item}
+                  index={index}
+                  total={educationItems.length}
+                  progress={smoothProgress}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        {/* Left side - MY EDUCATION sticky */}
-        <motion.div
-  initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.9, ease: cubicEase }}
-          className="hidden lg:flex items-start flex-shrink-0 h-full sticky top-20 relative"
-        >
-          <motion.div
-            style={{ opacity: haloOpacity, scale: haloScale }}
-            className="pointer-events-none absolute -left-6 top-[-24px] h-40 w-[20rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(207,78,8,0.18),rgba(0,0,0,0))] blur-3xl"
-          />
 
-          <motion.h2
-            data-cursor="big"
-            style={{
-              opacity: titleOpacity,
-              filter: blurFilter,
-              y: titleLift,
-              letterSpacing: letterSpacingPx,
-              writingMode: "horizontal-tb",
-              marginRight: "2rem",
-            }}
-            className="
-              text-2xl md:text-3xl 
-              tracking-wider uppercase 
-              flex flex-row gap-2
-              font-extrabold
-            "
-          >
-            <span className="text-[hsl(var(--scroll-indicator))]">MY</span>
-
-            <span className="text-[hsl(var(--accent-orange))]/80">EDUCATION</span>
-          </motion.h2>
-
-          <motion.span
-            aria-hidden
-            style={{ opacity: ghostOpacity, y: titleLift }}
-            className="absolute left-[-10px] top-1/2 -translate-y-1/2 text-4xl font-black tracking-[1rem] text-foreground/5 select-none rotate-90 origin-left"
-          >
-            MY EDUCATION
-          </motion.span>
-        </motion.div>
-
-        {/* Right side - Education timeline */}
-        <motion.div
-          className="flex-1 space-y-12 md:space-y-16 text-[hsl(var(--scroll-indicator))]"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          variants={containerVariants}
-        >
-          {educationItems.map((item, index) => (
+        <div className="absolute bottom-10 left-10 right-10 flex items-center gap-6 z-20">
+          <div className="text-[10px] font-mono text-white/20 tabular-nums">01</div>
+          <div className="h-px flex-1 bg-white/5 relative overflow-hidden">
             <motion.div
-              key={item.institution}
-              variants={itemVariants}
-              className="relative pb-12 md:pb-16 border-b border-border/50 last:border-b-0 last:pb-0 group"
-            >
-              {/* Timeline dot */}
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.6,
-                  delay: 0.2 + index * 0.2,
-                  ease: cubicEase,
-                }}
-                className="absolute left-0 top-0 w-3 h-3 md:w-4 md:h-4 rounded-full bg-primary border-2 border-background "
-                style={{
-                  boxShadow: "0 0 0 3px hsl(var(--background))",
-                  marginLeft: "-8px",
-                  marginTop: "8px",
-                }}
-              />
+              style={{ scaleX: smoothProgress, originX: 0 }}
+              className="absolute inset-0 bg-[hsl(var(--accent-orange))]"
+            />
+          </div>
+          <div className="text-[10px] font-mono text-white/20 tabular-nums">0{educationItems.length}</div>
+        </div>
 
-              {/* Content */}
-              <div className="pl-6 md:pl-8 ">
-                {/* Institution & Date */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.6,
-                    delay: 0.3 + index * 0.2,
-                    ease: cubicEase,
-                  }}
-                  className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 mb-3 text-[hsl(var(--scroll-indicator))]"
-                >
-                  <h3
-                  data-cursor="big"
-                    className="text-lg md:text-xl  font-semibold"
-                    data-testid={`text-education-institution-${index}`}
-                  >
-                    {item.institution}
-                  </h3>
-                  <span
-                    className="text-sm md:text-base text-muted-foreground font-light whitespace-nowrap"
-                    data-testid={`text-education-date-${index}`}
-                  >
-                    {item.date}
-                  </span>
-                </motion.div>
-
-                {/* Title */}
-                <motion.h4
-                data-cursor="big"
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.6,
-                    delay: 0.35 + index * 0.2,
-                    ease: cubicEase,
-                  }}
-                  className="text-base md:text-lg text-primary font-semibold mb-3 "
-                  data-testid={`text-education-title-${index}`}
-                >
-                  {item.title}
-                </motion.h4>
-
-                {/* Description */}
-                <motion.p
-                data-cursor="big"
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.6,
-                    delay: 0.4 + index * 0.2,
-                    ease: cubicEase,
-                  }}
-                  className="text-sm md:text-base text-foreground/50 mb-4 font-light leading-relaxed"
-                  data-testid={`text-education-description-${index}`}
-                >
-                  {item.description}
-                </motion.p>
-
-                {/* Details list */}
-                <motion.ul
-                data-cursor="big"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.6,
-                    delay: 0.45 + index * 0.2,
-                    ease: cubicEase,
-                  }}
-                  className="space-y-2"
-                >
-                  {item.details.map((detail, detailIndex) => (
-                    <motion.li
-                    data-cursor="big"
-                      key={detail}
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{
-                        duration: 0.5,
-                        delay: 0.5 + index * 0.2 + detailIndex * 0.08,
-                        ease: cubicEase,
-                      }}
-                      className="text-xs md:text-sm text-foreground/60 flex items-start gap-2 font-light"
-                      data-testid={`text-education-detail-${index}-${detailIndex}`}
-                    >
-                      <span className="inline-block w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                      {detail}
-                    </motion.li>
-                  ))}
-                </motion.ul>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );
 };
 
 export default Education;
-
-
-

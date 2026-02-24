@@ -10,13 +10,11 @@ export default function CustomCursor() {
   const y = useSpring(cursorY, springConfig);
 
   const [variant, setVariant] = useState<
-    "default" | "small" | "big" | "hidden" | "view" | "details"
-  >("default");
+    "default" | "small" | "medium" | "big" | "hidden" | "view" | "details"
+  >("default"); // 🔥 aggiunta variante "medium"
 
   useEffect(() => {
-    // Throttle con rAF per non eseguire DOM query ad ogni mousemove
     let rafId: number | null = null;
-    // non riassegniamo `latest`, quindi può essere `const` — mutiamo solo le sue proprietà
     const latest = { x: 0, y: 0, target: null as HTMLElement | null };
 
     const process = () => {
@@ -27,10 +25,8 @@ export default function CustomCursor() {
       cursorX.set(px);
       cursorY.set(py);
 
-      // elementi visivi sotto il puntatore (anche se pointer-events: none)
       const elems = (document.elementsFromPoint(px, py) || []) as Element[];
 
-      // PRIORITÀ: details sempre prima
       for (const el of elems) {
         const elh = el as HTMLElement;
         if (elh.closest && elh.closest("[data-cursor='details']")) {
@@ -40,7 +36,6 @@ export default function CustomCursor() {
         }
       }
 
-      // poi hide
       for (const el of elems) {
         const elh = el as HTMLElement;
         if (elh.closest && elh.closest("[data-cursor='hide']")) {
@@ -50,16 +45,18 @@ export default function CustomCursor() {
         }
       }
 
-      // fallback: usa target (utile quando overlay ha pointer-events:auto)
       if (target && target.closest("[data-cursor='hide']")) {
         setVariant("hidden");
       } else if (target && target.closest("[data-cursor='view']")) {
         setVariant("view");
       } else if (target && target.closest("[data-cursor='small']")) {
         setVariant("small");
+      } else if (target && target.closest("[data-cursor='medium']")) { // 🔥 nuova variante
+        setVariant("medium");
       } else if (target && target.closest("[data-cursor='big']")) {
         setVariant("big");
       } else {
+
         setVariant("default");
       }
 
@@ -70,10 +67,7 @@ export default function CustomCursor() {
       latest.x = e.clientX;
       latest.y = e.clientY;
       latest.target = e.target as HTMLElement | null;
-
-      if (rafId == null) {
-        rafId = requestAnimationFrame(process);
-      }
+      if (rafId == null) rafId = requestAnimationFrame(process);
     };
 
     const handleMouseLeave = () => {
@@ -86,10 +80,7 @@ export default function CustomCursor() {
     return () => {
       window.removeEventListener("mousemove", move);
       window.removeEventListener("mouseleave", handleMouseLeave);
-      if (rafId != null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
+      if (rafId != null) cancelAnimationFrame(rafId);
     };
   }, [cursorX, cursorY]);
 
@@ -97,48 +88,30 @@ export default function CustomCursor() {
 
   return (
     <motion.div
-      className="
-        pointer-events-none 
-        fixed top-0 left-0 z-[999999]
-        flex items-center justify-center
-        font-semibold uppercase tracking-widest
-      "
-      style={{
-        x,
-        y,
-        translateX: "-50%",
-        translateY: "-50%"
-      }}
+      className="pointer-events-none fixed top-0 left-0 z-[999999] flex items-center justify-center font-semibold uppercase tracking-widest"
+      style={{ x, y, translateX: "-50%", translateY: "-50%" }}
       animate={{
         width:
           variant === "view" ? 170 :
           variant === "small" ? 22 :
+          variant === "medium" ? 100 : // 🔥 grandezza media per logo
           variant === "big" ? 250 :
           38,
         height:
           variant === "view" ? 170 :
           variant === "small" ? 22 :
+          variant === "medium" ? 100 : // 🔥 altezza media
           variant === "big" ? 250 :
           38,
-
         opacity: variant === "hidden" ? 0 : 1,
-
         borderRadius: "999px",
-
         backgroundColor: "rgb(235, 89, 57)",
-
         mixBlendMode: isDetails ? "normal" : variant === "view" ? "normal" : "difference",
       }}
-      transition={{
-        type: "spring",
-        stiffness: 220,
-        damping: 26,
-      }}
+      transition={{ type: "spring", stiffness: 220, damping: 26 }}
     >
       {variant === "view" && !isDetails && (
-        <span className="pointer-events-none text-[14px] text-black">
-          VIEW DETAILS
-        </span>
+        <span className="pointer-events-none text-[14px] text-black">VIEW DETAILS</span>
       )}
     </motion.div>
   );
