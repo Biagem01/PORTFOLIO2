@@ -1,189 +1,76 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useMemo, useRef } from "react";
-import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MagneticWrapper } from './Magnetic';
+import { motion } from 'framer-motion';
 
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  const ref = useRef<HTMLDivElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ["-10%", "8%"]);
-  const ghostOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.12, 0.4, 0.12]);
-  const haloScale = useTransform(scrollYProgress, [0, 1], [0.9, 1.05]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.35, 1, 0.4]);
-  const underlineX = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
-  const socialLinks = useMemo(
-    () => [
-      {
-        name: "Email",
-        icon: Mail,
-        href: "mailto:tuaemail@example.com",
-        label: "Email",
-      },
-      {
-        name: "LinkedIn",
-        icon: Linkedin,
-        href: "https://linkedin.com/in/yourprofile",
-        label: "LinkedIn",
-      },
-      {
-        name: "GitHub",
-        icon: Github,
-        href: "https://github.com/yourprofile",
-        label: "GitHub",
-      },
-    ],
-    []
-  );
-
+export const Footer = () => {
   return (
-    <footer
-      ref={ref}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background text-foreground"
-      data-cursor="hide"
-    >
-      <motion.div
-        aria-hidden
-        style={{ opacity: ghostOpacity, scale: haloScale }}
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-      >
-        <motion.div
-          className="text-[28vw] md:text-[22vw] font-black leading-none tracking-tighter text-[hsl(var(--scroll-indicator))]/20 select-none"
-          style={{ y }}
-        >
-          BC
-        </motion.div>
-      </motion.div>
+    <footer className="bg-black py-16 px-6 lg:px-12 border-t border-foreground/5">
+      <div className="max-w-7xl mx-auto flex flex-col gap-12">
 
-      <div className="w-full max-w-6xl mx-auto px-6 py-20 relative z-10">
-        <motion.div
-          style={{ y, opacity: textOpacity }}
-          className="grid gap-16 lg:grid-cols-[1.1fr,0.9fr] items-end"
-        >
-          <div className="space-y-10">
-            <div className="space-y-4">
-              <motion.p
-                className="uppercase text-xs md:text-sm tracking-[0.35em] text-muted-foreground"
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
-                biagio cubisino — portfolio
-              </motion.p>
+        {/* Top row */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
 
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-4xl md:text-5xl lg:text-6xl font-black leading-[0.95] tracking-tight"
-              >
-                Ready when you are —
-                <span className="block text-[hsl(var(--scroll-indicator))]">let&apos;s build something refined.</span>
-              </motion.h2>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              <Button
-                size="lg"
-                className="rounded-full px-7 py-6 text-base font-semibold border border-foreground bg-black text-[hsl(var(--scroll-indicator))] transition-all hover:bg-[hsl(var(--scroll-indicator))] hover:text-black hover:border-[hsl(var(--scroll-indicator))]"
-                asChild
-              >
-                <a href="mailto:tuaemail@example.com" data-testid="cta-email">
-                  start a project
-                </a>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="rounded-full px-7 py-6 text-base font-semibold border border-foreground/60 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:text-[hsl(var(--scroll-indicator))] hover:bg-black/60"
-                asChild
-              >
-                <a href="#contact" data-testid="cta-contact">
-                  view contact
-                </a>
-              </Button>
-            </div>
-
-            <div className="relative h-px bg-border/40 overflow-hidden">
-              <motion.div
-                className="absolute left-0 top-0 h-full bg-[hsl(var(--scroll-indicator))]"
-                style={{ width: underlineX }}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-8">
+          {/* Signature */}
+          <MagneticWrapper>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="rounded-3xl border border-border/60 bg-background/60 backdrop-blur-sm p-8 shadow-sm"
+              transition={{ duration: 0.6 }}
+              className="group relative px-4 py-2 cursor-pointer flex flex-col items-center md:items-start"
+              data-cursor="hide"
             >
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Currently</span>
-                <span className="font-semibold text-foreground">Available for freelance</span>
-              </div>
+              {/* Nome */}
+              <span className="relative z-10 text-2xl font-serif tracking-tight transition-colors duration-500 group-hover:text-white">
+                Biagio Cubisino
+              </span>
 
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Contact</p>
-                  <a
-                    href="mailto:tuaemail@example.com"
-                    className="group inline-flex items-center gap-2 text-lg font-semibold text-foreground hover:text-[hsl(var(--scroll-indicator))] transition-colors"
-                  >
-                    tuaemail@example.com
-                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                  </a>
-                </div>
+              {/* Ruolo */}
+              <span className="relative z-10 text-xs font-mono uppercase tracking-[0.3em] text-muted-foreground/60 mt-1 transition-colors duration-500 group-hover:text-white">
+                Full Stack Developer
+              </span>
 
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">Based in</p>
-                  <p className="text-lg font-semibold text-foreground">Palermo, IT</p>
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                {socialLinks.map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <Button
-                      key={link.name}
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 rounded-full border border-border/70 text-foreground transition-all hover:border-[hsl(var(--scroll-indicator))] hover:bg-[hsl(var(--scroll-indicator))] hover:text-black"
-                      asChild
-                    >
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid={`link-${link.name.toLowerCase()}`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span>{link.label}</span>
-                      </a>
-                    </Button>
-                  );
-                })}
-              </div>
+              {/* Sfondo animato */}
+              <div className="absolute inset-0 bg-[#EB5939] scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-bottom rounded-sm" />
             </motion.div>
+          </MagneticWrapper>
 
-            <div className="flex items-center justify-between text-sm text-muted-foreground border-t border-border/60 pt-6">
-              <p className="text-foreground/80">© {currentYear} Biagio Cubisino</p>
-              <p className="tracking-[0.26em] uppercase text-xs">Minimal portfolio</p>
-            </div>
+          {/* Social */}
+          <div className="flex gap-6">
+            {['LinkedIn', 'Twitter', 'Dribbble', 'Instagram'].map((social, i) => (
+              <MagneticWrapper key={social}>
+                <motion.a
+                  href="#"
+                  data-cursor="hide"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.4 }}
+                  className="group relative px-4 py-2"
+                >
+                  <span className="relative z-10 text-[10px] font-mono uppercase tracking-[0.3em] transition-colors duration-500 group-hover:text-white">
+                    {social}
+                  </span>
+                  <div className="absolute inset-0 bg-[#EB5939] scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-bottom rounded-sm" />
+                </motion.a>
+              </MagneticWrapper>
+            ))}
           </div>
-        </motion.div>
+        </div>
+
+        {/* Bottom row */}
+        <div className="pt-8 border-t border-foreground/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/50">
+          <span>© {new Date().getFullYear()} Biagio Cubisino</span>
+
+          <div className="flex gap-8">
+            <a href="#" className="hover:text-foreground transition-colors duration-300">
+              Privacy Policy
+            </a>
+            <a href="#" className="hover:text-foreground transition-colors duration-300">
+              Terms
+            </a>
+          </div>
+        </div>
+
       </div>
     </footer>
   );
