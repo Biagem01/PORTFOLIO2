@@ -13,11 +13,15 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import CustomCursor from "@/components/CustomCursor";
 import LoadingScreen from "@/components/LoadingScreen";
 
-
 import Index from "./pages/Index";
 import AllProjects from "./pages/AllProjects";
 import ProjectPage from "./pages/ProjectPage";
 import NotFound from "./pages/NotFound";
+
+// Disabilita il ripristino automatico dello scroll del browser — globale
+if (typeof window !== "undefined") {
+  window.history.scrollRestoration = "manual";
+}
 
 /* -------------------- ROUTER -------------------- */
 
@@ -38,8 +42,22 @@ function ScrollToTop() {
   const [location] = useLocation();
 
   useLayoutEffect(() => {
-    // forza sempre scroll top quando cambia route
-    window.scrollTo(0, 0);
+    // If we're navigating BACK from a project page (Back button sets this flag),
+    // skip the scroll reset so the user lands where they were.
+    const skipReset = sessionStorage.getItem("skip_scroll_reset");
+    if (skipReset) {
+      sessionStorage.removeItem("skip_scroll_reset");
+      return;
+    }
+
+    // Normal navigation: reset to top immediately
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+
+    const raf = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    });
+
+    return () => cancelAnimationFrame(raf);
   }, [location]);
 
   return null;
@@ -48,7 +66,8 @@ function ScrollToTop() {
 /* -------------------- APP -------------------- */
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
+  const isFirstLoad = !sessionStorage.getItem("app_loaded");
+  const [isLoading, setIsLoading] = useState(isFirstLoad);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -57,7 +76,12 @@ export default function App() {
           <CustomCursor />
 
           {isLoading && (
-            <LoadingScreen onComplete={() => setIsLoading(false)} />
+            <LoadingScreen
+              onComplete={() => {
+                sessionStorage.setItem("app_loaded", "1");
+                setIsLoading(false);
+              }}
+            />
           )}
 
           {!isLoading && (
@@ -66,10 +90,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
             >
-              {/* 🔥 Scroll reset globale */}
               <ScrollToTop />
-
-              
               <Router />
               <Toaster />
               <Sonner />

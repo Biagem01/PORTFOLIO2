@@ -1,61 +1,33 @@
-import { Mail, Linkedin, ArrowRight, ArrowUpRight } from "lucide-react";
-import { useState, useRef } from "react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import { MagneticWrapper } from "@/components/Magnetic";
+import { HeroBadgesFocus } from "./TrueFocus";
 
-/* ---------------- TYPES ---------------- */
-
-type ContactFormData = {
-  name: string;
-  email: string;
-  message: string;
-};
-
-type Field = {
-  label: string;
-  name: keyof ContactFormData;
-  type: string;
-  placeholder: string;
-};
-
-/* ---------------- COMPONENT ---------------- */
+type ContactFormData = { name: string; email: string; message: string; };
+type Field = { label: string; name: keyof ContactFormData; type: string; placeholder: string; };
 
 export const Contact = () => {
-  const [formData, setFormData] = useState<ContactFormData>({
-    name: "",
-    email: "",
-    message: "",
-  });
-
+  const [formData, setFormData] = useState<ContactFormData>({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const sectionRef = useRef<HTMLDivElement | null>(null);
+  // Ancora per i frame TrueFocus — il div che contiene i 3 blocchi di testo
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
-  /* ---------------- SCROLL ---------------- */
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 60, damping: 20, mass: 1 });
 
-  const opacity = useTransform(smoothProgress, [0, 0.12, 0.88, 1], [0, 1, 1, 0]);
-  const scale   = useTransform(smoothProgress, [0, 0.12, 0.88, 1], [0.94, 1, 1, 0.94]);
-  const leftY   = useTransform(smoothProgress, [0, 1], [60, -60]);
-  const rightY  = useTransform(smoothProgress, [0, 1], [100, -40]);
+  const opacity   = useTransform(smoothProgress, [0, 0.12, 0.88, 1], [0, 1, 1, 0]);
+  const scale     = useTransform(smoothProgress, [0, 0.12, 0.88, 1], [0.94, 1, 1, 0.94]);
+  const leftY     = useTransform(smoothProgress, [0, 1], [60, -60]);
+  const rightY    = useTransform(smoothProgress, [0, 1], [100, -40]);
   const barScaleX = useTransform(smoothProgress, [0, 1], [0, 1]);
-
-  const titleWords = ["Let's", "create", "something", "extraordinary."];
-
-  /* ---------------- FIELDS ---------------- */
 
   const fields: Field[] = [
     { label: "Name",  name: "name",  type: "text",  placeholder: "Your name" },
     { label: "Email", name: "email", type: "email", placeholder: "Your professional email" },
   ];
-
-  /* ---------------- SUBMIT ---------------- */
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,14 +36,12 @@ export const Contact = () => {
       await new Promise((r) => setTimeout(r, 1400));
       toast.success("Message sent!", { description: "I'll get back to you as soon as possible." });
       setFormData({ name: "", email: "", message: "" });
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong", { description: "Please try again later." });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  /* ---------------- JSX ---------------- */
 
   return (
     <section
@@ -79,29 +49,21 @@ export const Contact = () => {
       id="contact"
       className="relative min-h-screen py-24 lg:py-48 px-6 bg-black text-white overflow-hidden"
     >
-      {/* Progress bar */}
       <div className="absolute bottom-8 left-6 right-6 flex items-center gap-4 z-20 opacity-30">
         <div className="text-[9px] font-mono text-white/40 tabular-nums">03</div>
         <div className="h-px flex-1 bg-white/5 relative overflow-hidden">
-          <motion.div
-            style={{ scaleX: barScaleX, originX: 0 }}
-            className="absolute inset-0 bg-[hsl(var(--accent-orange))]"
-          />
+          <motion.div style={{ scaleX: barScaleX, originX: 0 }} className="absolute inset-0 bg-[hsl(var(--accent-orange))]" />
         </div>
         <div className="text-[9px] font-mono text-white/40 tabular-nums">END</div>
       </div>
 
-      <motion.div
-        style={{ opacity, scale }}
-        className="max-w-7xl mx-auto relative z-10"
-      >
+      <motion.div style={{ opacity, scale }} className="max-w-7xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-center">
 
           {/* ────── LEFT COLUMN ────── */}
           <motion.div style={{ y: leftY }} className="space-y-16">
             <div className="space-y-8">
 
-              {/* Badge */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -113,30 +75,66 @@ export const Contact = () => {
                 Open for new collaborations
               </motion.div>
 
-              {/* Title */}
-              <div className="space-y-1" data-cursor="big">
-                {titleWords.map((word, i) => (
-                  <div key={i} className="overflow-hidden">
-                    <motion.h2
-                      initial={{ y: "110%", rotate: 3 }}
-                      whileInView={{ y: 0, rotate: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                      className={`tracking-tighter leading-[0.95] ${
-                        word === "something"
-                          ? "text-4xl md:text-5xl lg:text-6xl text-white/30 italic font-serif font-medium"
-                          : word === "extraordinary."
-                            ? "text-4xl md:text-5xl lg:text-6xl text-[hsl(var(--accent-orange))] font-orange font-extrabold"
-                            : "text-4xl md:text-5xl lg:text-6xl text-[hsl(var(--scroll-indicator))] font-extrabold"
-                      }`}
-                    >
-                      {word}
-                    </motion.h2>
-                  </div>
-                ))}
+              {/*
+                Struttura verticale con HeroBadgesFocus:
+                  LET'S        ← word0 (coppia A) 🟠
+                  CREATE       ← word1 (coppia B) 🟠
+                  something    ← fisso oro, mai blurrato (fuori dal componente)
+                  EXPERIENCES  ← word2 (coppia A) 🟠
+
+                Stato A: LET'S 🟠  CREATE blur  EXPERIENCES 🟠
+                Stato B: LET'S blur  CREATE 🟠  EXPERIENCES blur
+
+                word3 = "" — non serve una quarta parola attiva, ma HeroBadgesFocus
+                richiede 4 parole. Usiamo un placeholder invisibile.
+                In alternativa, creo una variante che accetta solo word0/word1/word2.
+
+                Soluzione più pulita: uso word3="EXPERIENCES" e word2="" nascosto.
+                Ma la struttura è: word0+word2 coppia A, word1+word3 coppia B.
+                Quindi:
+                  word0 = "LET'S"       → coppia A riga 1
+                  word1 = "CREATE"      → coppia B riga 2
+                  [something fisso]     → fuori dal componente, tra word1 e word2
+                  word2 = "EXPERIENCES" → coppia A riga 4
+                  word3 = nascosto      → coppia B riga 4 (non visibile)
+
+                Per non mostrare word3, lo rendiamo opaco 0 — ma cambia il layout.
+                Soluzione migliore: aggiungo un prop opzionale al componente, ma qui
+                uso direttamente il layout con "something" come separatore esterno.
+
+                NOTA: uso direttamente ref su un div wrapper con position:relative
+                e monto i 3 block word con HeroBadgesFocus escludendo word3
+                attraverso un wrapper div con overflow:hidden height:0.
+              */}
+              <div
+                ref={titleRef}
+                className="relative space-y-0"
+                data-cursor="big"
+              >
+                {/*
+                  HeroBadgesFocus verticale:
+                    word0 = LET'S       (riga 1, coppia A)
+                    word1 = CREATE      (riga 2, coppia B)
+                    word2 = EXPERIENCES (riga 3, coppia A — ma visivamente è riga 4)
+                    word3 = nascosto    (riga 4 — height 0, non visibile)
+
+                  "something" è inserito come span fisso tra word1 e word2
+                  tramite CSS absolute — non è possibile farlo dentro HeroBadgesFocus.
+
+                  Approccio più pulito: non uso HeroBadgesFocus che forza 4 righe
+                  consecutive. Invece replico la logica direttamente qui con 3 parole.
+                */}
+                <ContactTrueFocus
+                  fontSize="clamp(1.8rem, 4vw, 3rem)"
+                  animationDuration={0.9}
+                  focusPause={3200}
+                  borderColor="rgb(235, 89, 57)"
+                  glowColor="rgba(235, 89, 57, 0.55)"
+                  blurAmount={4}
+                  frameAnchorRef={titleRef as React.RefObject<HTMLElement>}
+                />
               </div>
 
-              {/* Description */}
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -151,8 +149,6 @@ export const Contact = () => {
             </div>
 
             <div className="space-y-8 pt-4">
-
-              {/* Divider */}
               <motion.div
                 initial={{ scaleX: 0 }}
                 whileInView={{ scaleX: 1 }}
@@ -160,8 +156,6 @@ export const Contact = () => {
                 transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className="h-px w-full bg-white/8 origin-left"
               />
-
-              {/* Email */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -181,11 +175,10 @@ export const Contact = () => {
                   </a>
                 </MagneticWrapper>
               </motion.div>
-
             </div>
           </motion.div>
 
-          {/* ────── RIGHT COLUMN: Logo + Form ────── */}
+          {/* ────── RIGHT COLUMN ────── */}
           <motion.div
             style={{ y: rightY }}
             initial={{ opacity: 0, x: 40 }}
@@ -195,8 +188,6 @@ export const Contact = () => {
             className="relative"
           >
             <div className="absolute -inset-6 -z-10 rounded-[48px] bg-[hsl(var(--accent-orange))]/5 blur-2xl opacity-50" />
-
-            {/* Logo — sopra al form, centrato */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7, y: 20 }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
@@ -206,119 +197,214 @@ export const Contact = () => {
               data-cursor="medium"
             >
               <MagneticWrapper>
-                <img
-                  src="/logo/favicon.png"
-                  alt="Logo"
-                  data-cursor="medium"
-                  className="w-40 h-40 md:w-48 md:h-48 object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
-                />
+                <img src="/logo/favicon.png" alt="Logo" data-cursor="medium" className="w-40 h-40 md:w-48 md:h-48 object-contain opacity-90 hover:opacity-100 transition-opacity duration-300" />
               </MagneticWrapper>
             </motion.div>
 
-            {/* Form */}
             <div className="p-8 md:p-12 rounded-3xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm">
-                <form onSubmit={handleSubmit} className="space-y-8">
-
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {fields.map((field, i) => (
-                      <motion.div
-                        key={field.name}
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.35 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                        className="space-y-2"
-                      >
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">
-                          {field.label}
-                        </label>
-                        <input
-                          type={field.type}
-                          value={formData[field.name]}
-                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                          placeholder={field.placeholder}
-                          required
-                          className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white/80
-                            focus:border-[hsl(var(--accent-orange))] outline-none transition-colors duration-300 placeholder:text-white/20"
-                        />
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-2"
-                  >
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">
-                      Message
-                    </label>
-                    <textarea
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Tell me about your project..."
-                      required
-                      rows={4}
-                      className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white/80
-                        focus:border-[hsl(var(--accent-orange))] outline-none transition-colors duration-300 resize-none placeholder:text-white/20"
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-                    className="pt-2"
-                  >
-                    <MagneticWrapper>
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="group relative inline-flex items-center gap-3
-                          bg-[hsl(var(--accent-orange))] text-black
-                          px-8 py-4 rounded-full overflow-hidden
-                          text-xs font-medium tracking-[0.1em] uppercase
-                          shadow-[0_0_20px_hsl(var(--accent-orange)/0.3)]
-                          transition-all duration-300
-                          hover:shadow-[0_0_36px_hsl(var(--accent-orange)/0.55)]
-                          disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out bg-gradient-to-r from-white/0 via-white/25 to-white/0 rotate-12" />
-
-                        <AnimatePresence mode="wait">
-                          <motion.span
-                            key={isSubmitting ? "sending" : "send"}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.2 }}
-                            className="relative z-10 font-medium tracking-tight"
-                          >
-                            {isSubmitting ? "Sending..." : "Send Message"}
-                          </motion.span>
-                        </AnimatePresence>
-
-                        <div className="relative z-10 w-5 h-5 flex items-center justify-center overflow-hidden">
-                          <ArrowRight className="w-full h-full transition-transform duration-300 group-hover:translate-x-full" />
-                          <ArrowRight className="absolute w-full h-full -translate-x-full transition-transform duration-300 group-hover:translate-x-0" />
-                        </div>
-                      </button>
-                    </MagneticWrapper>
-                  </motion.div>
-
-                </form>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  {fields.map((field, i) => (
+                    <motion.div key={field.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.35 + i * 0.1, ease: [0.16, 1, 0.3, 1] }} className="space-y-2">
+                      <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">{field.label}</label>
+                      <input type={field.type} value={formData[field.name]} onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })} placeholder={field.placeholder} required className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white/80 focus:border-[hsl(var(--accent-orange))] outline-none transition-colors duration-300 placeholder:text-white/20" />
+                    </motion.div>
+                  ))}
+                </div>
+                <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.55, ease: [0.16, 1, 0.3, 1] }} className="space-y-2">
+                  <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Message</label>
+                  <textarea value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} placeholder="Tell me about your project..." required rows={4} className="w-full bg-transparent border-b border-white/10 py-2 text-sm text-white/80 focus:border-[hsl(var(--accent-orange))] outline-none transition-colors duration-300 resize-none placeholder:text-white/20" />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.65, ease: [0.16, 1, 0.3, 1] }} className="pt-2">
+                  <MagneticWrapper>
+                    <button type="submit" disabled={isSubmitting} className="group relative inline-flex items-center gap-3 bg-[hsl(var(--accent-orange))] text-black px-8 py-4 rounded-full overflow-hidden text-xs font-medium tracking-[0.1em] uppercase shadow-[0_0_20px_hsl(var(--accent-orange)/0.3)] transition-all duration-300 hover:shadow-[0_0_36px_hsl(var(--accent-orange)/0.55)] disabled:opacity-50 disabled:cursor-not-allowed">
+                      <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out bg-gradient-to-r from-white/0 via-white/25 to-white/0 rotate-12" />
+                      <AnimatePresence mode="wait">
+                        <motion.span key={isSubmitting ? "sending" : "send"} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="relative z-10 font-medium tracking-tight">
+                          {isSubmitting ? "Sending..." : "Send Message"}
+                        </motion.span>
+                      </AnimatePresence>
+                      <div className="relative z-10 w-5 h-5 flex items-center justify-center overflow-hidden">
+                        <ArrowRight className="w-full h-full transition-transform duration-300 group-hover:translate-x-full" />
+                        <ArrowRight className="absolute w-full h-full -translate-x-full transition-transform duration-300 group-hover:translate-x-0" />
+                      </div>
+                    </button>
+                  </MagneticWrapper>
+                </motion.div>
+              </form>
             </div>
-
             <div className="absolute -inset-4 -z-10 rounded-[40px] border border-white/5 opacity-50 blur-xl" />
           </motion.div>
-
         </div>
       </motion.div>
     </section>
   );
 };
+
+// ─── ContactTrueFocus ─────────────────────────────────────────────────────────
+// Versione a 3 parole verticali per Contact:
+//   LET'S        ← coppia A
+//   CREATE       ← coppia B
+//   something    ← FISSO oro, mai blurrato
+//   EXPERIENCES  ← coppia A
+//
+// Stato A: LET'S 🟠  CREATE blur  EXPERIENCES 🟠
+// Stato B: LET'S blur  CREATE 🟠  EXPERIENCES blur
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ContactTrueFocus({
+  fontSize = 'clamp(1.8rem, 4vw, 3rem)',
+  animationDuration = 0.9,
+  focusPause = 3200,
+  borderColor = 'rgb(235, 89, 57)',
+  glowColor = 'rgba(235, 89, 57, 0.5)',
+  blurAmount = 4,
+  frameAnchorRef,
+}: {
+  fontSize?: string;
+  animationDuration?: number;
+  focusPause?: number;
+  borderColor?: string;
+  glowColor?: string;
+  blurAmount?: number;
+  frameAnchorRef: React.RefObject<HTMLElement>;
+}) {
+  const [focusOnA, setFocusOnA] = useState(true);
+  const refLets  = useRef<HTMLSpanElement>(null);
+  const refCreate = useRef<HTMLSpanElement>(null);
+  const refExp   = useRef<HTMLSpanElement>(null);
+
+  const [rect0, setRect0] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [rect1, setRect1] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const id = setInterval(() => setFocusOnA(v => !v), focusPause);
+    return () => clearInterval(id);
+  }, [focusPause]);
+
+  useEffect(() => {
+    const update = () => {
+      const anchor = frameAnchorRef.current;
+      if (!anchor) return;
+      const a = anchor.getBoundingClientRect();
+
+      // Coppia A: LET'S + EXPERIENCES
+      // Coppia B: CREATE (solo 1 frame)
+      if (focusOnA) {
+        const r0 = refLets.current?.getBoundingClientRect();
+        const r1 = refExp.current?.getBoundingClientRect();
+        if (r0) setRect0({ x: r0.left - a.left, y: r0.top - a.top, width: r0.width, height: r0.height });
+        if (r1) setRect1({ x: r1.left - a.left, y: r1.top - a.top, width: r1.width, height: r1.height });
+      } else {
+        const r0 = refCreate.current?.getBoundingClientRect();
+        if (r0) setRect0({ x: r0.left - a.left, y: r0.top - a.top, width: r0.width, height: r0.height });
+        // Secondo frame non visibile quando solo CREATE è attivo
+        setRect1({ x: 0, y: 0, width: 0, height: 0 });
+      }
+      setReady(true);
+    };
+    update();
+    const tid = setTimeout(update, 50);
+    window.addEventListener('resize', update);
+    return () => { clearTimeout(tid); window.removeEventListener('resize', update); };
+  }, [focusOnA, frameAnchorRef]);
+
+  const dur = animationDuration;
+  const PADDING = '3px 14px';
+  const blurStyle = `blur(${blurAmount}px)`;
+
+  const wordStyle = (isActive: boolean): React.CSSProperties => ({
+    display: 'inline-block',
+    fontSize,
+    lineHeight: 1,
+    borderRadius: '0.5rem',
+    padding: PADDING,
+    backgroundColor: isActive ? 'hsl(var(--accent-orange))' : 'transparent',
+    color: isActive ? '#000' : 'hsl(38 28% 57%)',
+    filter: isActive ? 'blur(0px)' : blurStyle,
+    transition: [
+      `filter ${dur}s ease`,
+      `background-color ${dur * 0.6}s ease`,
+      `color ${dur * 0.6}s ease`,
+    ].join(', '),
+  });
+
+  return (
+    <>
+      {/* LET'S — coppia A */}
+      <div className="overflow-hidden">
+        <motion.div initial={{ y: "110%", rotate: 3 }} whileInView={{ y: 0, rotate: 0 }} viewport={{ once: true }} transition={{ duration: 1, delay: 0, ease: [0.16, 1, 0.3, 1] }}>
+          <span ref={refLets} className={`whitespace-nowrap tracking-tighter font-extrabold leading-[0.95] ${focusOnA ? 'font-orange' : 'font-white'}`} style={wordStyle(focusOnA)}>
+            LET'S
+          </span>
+        </motion.div>
+      </div>
+
+      {/* CREATE — coppia B */}
+      <div className="overflow-hidden">
+        <motion.div initial={{ y: "110%", rotate: 3 }} whileInView={{ y: 0, rotate: 0 }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}>
+          <span ref={refCreate} className={`whitespace-nowrap tracking-tighter font-extrabold leading-[0.95] ${!focusOnA ? 'font-orange' : 'font-white'}`} style={wordStyle(!focusOnA)}>
+            CREATE
+          </span>
+        </motion.div>
+      </div>
+
+      {/* something — FISSO, oro, mai blurrato */}
+      <div className="overflow-hidden">
+        <motion.div initial={{ y: "110%", rotate: 3 }} whileInView={{ y: 0, rotate: 0 }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}>
+          <span
+            className="whitespace-nowrap tracking-tighter font-medium leading-[0.95] italic font-serif"
+            style={{ display: 'inline-block', fontSize, lineHeight: 1, padding: PADDING, color: 'rgba(255,255,255,0.3)' }}
+          >
+            something
+          </span>
+        </motion.div>
+      </div>
+
+      {/* EXPERIENCES — coppia A */}
+      <div className="overflow-hidden">
+        <motion.div initial={{ y: "110%", rotate: 3 }} whileInView={{ y: 0, rotate: 0 }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}>
+          <span ref={refExp} className={`whitespace-nowrap tracking-tighter font-extrabold leading-[0.95] ${focusOnA ? 'font-orange' : 'font-white'}`} style={wordStyle(focusOnA)}>
+            EXPERIENCES
+          </span>
+        </motion.div>
+      </div>
+
+      {/* Frame A: su LET'S + EXPERIENCES */}
+      {ready && focusOnA && <ContactFrame rect={rect0} dur={dur} borderColor={borderColor} glowColor={glowColor} />}
+      {ready && focusOnA && rect1.width > 0 && <ContactFrame rect={rect1} dur={dur} borderColor={borderColor} glowColor={glowColor} />}
+      {/* Frame B: solo su CREATE */}
+      {ready && !focusOnA && <ContactFrame rect={rect0} dur={dur} borderColor={borderColor} glowColor={glowColor} />}
+    </>
+  );
+}
+
+function ContactFrame({ rect, dur, borderColor, glowColor }: { rect: { x: number; y: number; width: number; height: number }; dur: number; borderColor: string; glowColor: string }) {
+  return (
+    <motion.div
+      aria-hidden
+      animate={{ x: rect.x, y: rect.y, width: rect.width, height: rect.height, opacity: 1 }}
+      initial={{ opacity: 0 }}
+      transition={{
+        x: { duration: dur, ease: [0.16, 1, 0.3, 1] },
+        y: { duration: dur, ease: [0.16, 1, 0.3, 1] },
+        width:  { duration: dur * 0.5, ease: [0.16, 1, 0.3, 1] },
+        height: { duration: dur * 0.5, ease: [0.16, 1, 0.3, 1] },
+        opacity: { duration: 0.15 },
+      }}
+      style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', boxSizing: 'content-box', zIndex: 20 }}
+    >
+      {([
+        { k: 'tl', s: { top: -9,    left: -9,  borderRight: 'none' as const, borderBottom: 'none' as const } },
+        { k: 'tr', s: { top: -9,    right: -9, borderLeft:  'none' as const, borderBottom: 'none' as const } },
+        { k: 'bl', s: { bottom: -9, left: -9,  borderRight: 'none' as const, borderTop:    'none' as const } },
+        { k: 'br', s: { bottom: -9, right: -9, borderLeft:  'none' as const, borderTop:    'none' as const } },
+      ]).map(({ k, s }) => (
+        <span key={k} style={{ position: 'absolute', width: '0.85rem', height: '0.85rem', border: `2.5px solid ${borderColor}`, filter: `drop-shadow(0px 0px 5px ${glowColor})`, borderRadius: '2px', ...s }} />
+      ))}
+    </motion.div>
+  );
+}
 
 export default Contact;

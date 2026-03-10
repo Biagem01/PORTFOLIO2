@@ -1,67 +1,57 @@
-
-
 @import url("https://fonts.googleapis.com/css2?family=URW+Gothic:wght@300;400;500;700;900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,400;1,500&display=swap');
+
+@font-face {
+  font-family: 'Riking';
+  src: url('/fonts/Riking.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'T1Korium';
+  src: url('/fonts/T1KoriumVF-BF65f3bd0000a2c.ttf') format('truetype');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-
-
-/* -----------------------------------------
-   DESIGN SYSTEM COMPLETAMENTE OTTIMIZZATO
-   Stile MINH PHAM + il tuo stile attuale
-   Tutti i colori sono HSL
------------------------------------------ */
-
 @layer base {
   :root {
-    /* BACKGROUND */
     --background: 0 0% 100%;
     --background-rgb: 255, 255, 255;
-
-    /* 🎨 TESTO (versione MinhPham) */
     --foreground: 0 0% 100%;         
     --card-foreground: 40 25% 92%;
     --popover-foreground: 40 25% 92%;
     --secondary-foreground: 40 25% 92%;
     --muted-foreground: 40 20% 80%;
---brand: 11 80% 57%;
---accent-orange: var(--brand);
-
-    /* SURFACES */
+    --brand: 11 80% 57%;
+    --accent-orange: var(--brand);
     --card: 0 0% 100%;
     --popover: 0 0% 100%;
     --secondary: 240 5% 96%;
     --muted: 240 5% 96%;
-
-    /* ACCENTI */
-   --primary: var(--brand);
+    --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
     --accent: 340 80% 65%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-
-    /* BORDI */
     --border: 240 6% 90%;
     --input: 240 6% 90%;
---ring: var(--brand);
-
-    /* RADII */
+    --ring: var(--brand);
     --radius: 1rem;
-
-    /* CUSTOM */
     --shadow-soft: 0 10px 40px -15px hsl(12 100% 56% / 0.2);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --gradient-start: 240 10% 98%;
     --gradient-end: 250 60% 96%;
-
-    /* Sidebar */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -70,56 +60,37 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Scroll indicator (oro/beige come MinhPham) */
     --scroll-indicator: 38 33% 57%;
     --body-text: 183 171 152;
-    
-    /* Project card */
     --project-overlay: 240 10% 3%;
-
-      --hero-gold: 182 155 109;   /* rgb */
-  --hero-orange: 235 89 57;   /* rgb */
+    --hero-gold: 182 155 109;
+    --hero-orange: 235 89 57;
   }
 
-  /* -----------------------------------------
-     DARK MODE — Stile MinhPham
-  ----------------------------------------- */
   .dark {
     --background: 240 10% 5%;
     --background-rgb: 13, 13, 15;
-
-    /* 🎨 TESTO COLORE MINHPHAM (dark mode) */
     --foreground: 0 0% 100%;        
     --card-foreground: 40 25% 92%;
     --popover-foreground: 40 25% 92%;
     --secondary-foreground: 40 25% 92%;
     --muted-foreground: 40 20% 80%;
-
-    /* SURFACES */
     --card: 240 10% 8%;
     --popover: 240 10% 8%;
     --secondary: 240 10% 15%;
     --muted: 240 10% 15%;
-
-    /* ACCENTI */
---primary: var(--brand);
+    --primary: var(--brand);
     --primary-foreground: 0 0% 100%;
     --accent: 340 80% 65%;
     --accent-foreground: 0 0% 100%;
-
-    /* BORDI */
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
     --border: 240 10% 18%;
     --input: 240 10% 18%;
---ring: var(--brand);
-
---shadow-soft: 0 10px 40px -15px hsl(var(--brand) / 0.3);
+    --ring: var(--brand);
+    --shadow-soft: 0 10px 40px -15px hsl(var(--brand) / 0.3);
     --gradient-start: 240 10% 8%;
     --gradient-end: 250 60% 12%;
-
-    /* Sidebar */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -128,34 +99,18 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Scroll indicator */
     --scroll-indicator: 38 33% 57%;
     --body-text: 183 171 152;
-    
-    /* Project card */
     --project-overlay: 240 10% 3%;
-
-    
-     --hero-gold: 182 155 109;
-  --hero-orange: 235 89 57;
+    --hero-gold: 182 155 109;
+    --hero-orange: 235 89 57;
   }
 }
 
-/* -----------------------------------------
-   TYPOGRAPHY & BASE STYLES
------------------------------------------ */
 @layer base {
- 
-
- body {
-  @apply bg-background text-foreground;
-  
-}
-
-
-
-
+  body {
+    @apply bg-background text-foreground;
+  }
 
   html {
     scroll-behavior: smooth;
@@ -168,14 +123,13 @@
     }
   }
 
-  /* base responsive: evita overflow strani */
   *, *::before, *::after {
     box-sizing: border-box;
   }
 
   html, body {
     width: 100%;
-    overflow-x: clip ; /* 🔥 blocca lo scroll orizzontale */
+    overflow-x: clip;
   }
 
   #root {
@@ -189,60 +143,75 @@
     display: block;
   }
 
-  /* se qualche parola lunga rompe layout */
   h1, h2, h3, p {
     overflow-wrap: anywhere;
     word-break: break-word;
   }
 }
 
-/* -----------------------------------------
-   UTILITIES
------------------------------------------ */
 @layer utilities {
   .hover-elevate {
     @apply transition-all duration-300;
   }
-
   .hover-elevate:hover {
     @apply -translate-y-1;
   }
-
   .active-elevate-2 {
     @apply transition-all duration-150;
   }
-
   .active-elevate-2:active {
     @apply scale-95;
   }
-  
-  /* Project number stroke text */
   .text-stroke {
     -webkit-text-stroke: 1px hsl(var(--scroll-indicator) / 0.3);
     -webkit-text-fill-color: transparent;
   }
-  
   .text-stroke-hover {
     -webkit-text-stroke: 1px hsl(var(--accent-orange) / 0.6);
     -webkit-text-fill-color: transparent;
   }
 }
 
+/* ─── FONT CLASSI ─────────────────────────────────────── */
 
+/*
+ * Riking = font statico, un solo peso.
+ * font-weight 700/900 viene ignorato silenziosamente dal browser.
+ * Soluzione: -webkit-text-stroke simula lo spessore visivo.
+ * font-synthesis: none blocca il faux-bold del browser.
+ *
+ * T1Korium = variable font (100-1000), supporta weight reale.
+ * font-variation-settings forza il peso esplicitamente.
+ */
 
-.font-orange{
-  
-  font-family: 'Playfair Display', serif !important;
-line-height: 0.9;
+/* Titoli hero/progetti — Riking (oro) */
+.font-white {
+  font-family: 'Riking', sans-serif !important;
+  font-weight: 800;
 }
 
-.font-white{
-   font-family: "URW Gothic", sans-serif !important;
+/* Testi arancione / badge — T1Korium (variable font) */
+.font-orange {
+  font-family: 'T1Korium', sans-serif !important;
+  font-weight: 700;
+  font-variation-settings: 'wght' 700;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
 }
 
-.font-button{
+/* Labels, bottoni, meta — JetBrains Mono */
+.font-button {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+}
+
+/* Role nei progetti — Cormorant Garamond italic */
+.font-role {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.04em;
 }
 
 /* -----------------------------------------
@@ -266,39 +235,22 @@ html, body, #root {
   isolation: isolate;
 }
 
-/* Orange accent for bold text in hero */
-.font-bold, .font-semibold {
-  font-weight: 900;
-}
-
 /* -----------------------------------------
    PROJECT SECTION ANIMATIONS
 ----------------------------------------- */
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
 @keyframes line-expand {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 .animate-shimmer {
@@ -321,7 +273,6 @@ html, body, #root {
   animation: line-expand 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Project image hover effect */
 .project-image-container {
   overflow: hidden;
 }
@@ -333,5 +284,3 @@ html, body, #root {
 .project-image-container:hover img {
   transform: scale(1.08);
 }
-
-

@@ -3,51 +3,25 @@ import {
   AnimatePresence,
   motion,
   useReducedMotion,
-  useAnimation,
-  useMotionValue,
   Variants,
   Transition,
 } from "framer-motion";
 
-// ─── CircularText ────────────────────────────────────────────────────────────
-
-const getRotationTransition = (duration: number, from: number, loop = true) => ({
-  from,
-  to: from + 360,
-  ease: "linear" as const,
-  duration,
-  type: "tween" as const,
-  repeat: loop ? Infinity : 0,
-});
-
-const getTransition = (duration: number, from: number) => ({
-  rotate: getRotationTransition(duration, from),
-  scale: { type: "spring" as const, damping: 20, stiffness: 300 },
-});
-
-type OnHover = "speedUp" | "slowDown" | "pause" | "goBonkers" | false;
-
-interface CircularTextProps {
-  text: string;
-  spinDuration?: number;
-  onHover?: OnHover;
-  className?: string;
-}
+// ─── SpinningText (Magic UI) ──────────────────────────────────────────────────
 
 const CIRCULAR_COLORS = [
   "hsl(var(--scroll-indicator))",
   "hsl(var(--accent-orange))",
 ];
 
-// PORT → arancione, FOLIO → scroll-indicator, BIAGIO → arancione, CUBISINO → scroll-indicator
 const CIRCULAR_SEGMENTS: { text: string; colorIdx: number }[] = [
-  { text: "PORT", colorIdx: 1 },
-  { text: "FOLIO", colorIdx: 0 },
-  { text: "*", colorIdx: 1 },
-  { text: "BIAGIO", colorIdx: 1 },
-  { text: "*", colorIdx: 0 },
+  { text: "PORT",     colorIdx: 1 },
+  { text: "FOLIO",    colorIdx: 0 },
+  { text: "*",        colorIdx: 1 },
+  { text: "BIAGIO",   colorIdx: 1 },
+  { text: "*",        colorIdx: 0 },
   { text: "CUBISINO", colorIdx: 0 },
-  { text: "*", colorIdx: 1 },
+  { text: "*",        colorIdx: 1 },
 ];
 
 const CIRCULAR_FULL_TEXT = CIRCULAR_SEGMENTS.map((s) => s.text).join("");
@@ -58,115 +32,74 @@ for (const seg of CIRCULAR_SEGMENTS) {
   }
 }
 
-function CircularText({
-  text,
-  spinDuration = 20,
-  onHover = "speedUp",
+interface SpinningTextProps {
+  duration?: number;
+  reverse?: boolean;
+  radius?: number;
+  className?: string;
+}
+
+function SpinningText({
+  duration = 20,
+  reverse = false,
+  radius = 5,
   className = "",
-}: CircularTextProps) {
-  const controls = useAnimation();
-  const rotation = useMotionValue(0);
-
-  useEffect(() => {
-    const start = rotation.get();
-    controls.start({
-      rotate: start + 360,
-      scale: 1,
-      transition: getTransition(spinDuration, start),
-    });
-  }, [spinDuration, text, onHover, controls, rotation]);
-
-  const handleHoverStart = () => {
-    const start = rotation.get();
-    if (!onHover) return;
-    let transitionConfig;
-    let scaleVal = 1;
-    switch (onHover) {
-      case "slowDown":
-        transitionConfig = getTransition(spinDuration * 2, start);
-        break;
-      case "speedUp":
-        transitionConfig = getTransition(spinDuration / 4, start);
-        break;
-      case "pause":
-        transitionConfig = {
-          rotate: { type: "spring" as const, damping: 20, stiffness: 300 },
-          scale: { type: "spring" as const, damping: 20, stiffness: 300 },
-        };
-        break;
-      case "goBonkers":
-        transitionConfig = getTransition(spinDuration / 20, start);
-        scaleVal = 0.8;
-        break;
-      default:
-        transitionConfig = getTransition(spinDuration, start);
-    }
-    controls.start({ rotate: start + 360, scale: scaleVal, transition: transitionConfig });
-  };
-
-  const handleHoverEnd = () => {
-    const start = rotation.get();
-    controls.start({
-      rotate: start + 360,
-      scale: 1,
-      transition: getTransition(spinDuration, start),
-    });
-  };
+}: SpinningTextProps) {
+  const letters = [...Array.from(CIRCULAR_FULL_TEXT), " "];
+  const total = letters.length;
 
   return (
     <motion.div
-      className={className}
-      style={{
-        rotate: rotation,
-        margin: "0 auto",
-        borderRadius: "50%",
-        width: 200,
-        height: 200,
-        position: "relative",
-        fontWeight: 900,
-        textAlign: "center",
-        cursor: "pointer",
-        transformOrigin: "50% 50%",
-      }}
+      className={`relative ${className}`}
+      style={{ width: 200, height: 200, margin: "0 auto" }}
       initial={{ rotate: 0 }}
-      animate={controls}
-      onMouseEnter={handleHoverStart}
-      onMouseLeave={handleHoverEnd}
+      animate={{ rotate: reverse ? -360 : 360 }}
+      transition={{ repeat: Infinity, ease: "linear", duration }}
     >
-      {(() => {
-        const letters = Array.from(CIRCULAR_FULL_TEXT);
-        return letters.map((letter, i) => {
-          const rotationDeg = (360 / letters.length) * i;
-          const factor = Math.PI / letters.length;
-          const x = factor * i;
-          const y = factor * i;
-          const transform = `rotateZ(${rotationDeg}deg) translate3d(${x}px, ${y}px, 0)`;
-          const color = CIRCULAR_COLOR_MAP[i] ?? CIRCULAR_COLORS[0];
-
-          return (
-            <span
-              key={i}
-              style={{
-                transform,
-                WebkitTransform: transform,
-                position: "absolute",
-                display: "inline-block",
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-                fontSize: 13,
-                letterSpacing: "0.08em",
-                transition: "all 0.5s cubic-bezier(0,0,0,1)",
-                color,
-              }}
-            >
-              {letter}
-            </span>
-          );
-        });
-      })()}
+      {letters.map((letter, index) => (
+        <motion.span
+          aria-hidden="true"
+          key={`${index}-${letter}`}
+          className="absolute top-1/2 left-1/2 inline-block"
+          style={{
+            transform: `
+              translate(-50%, -50%)
+              rotate(${(360 / total) * index}deg)
+              translateY(calc(${radius} * -1ch))
+            `,
+            transformOrigin: "center",
+            fontSize: 13,
+            fontWeight: 900,
+            letterSpacing: "0.08em",
+            color: CIRCULAR_COLOR_MAP[index] ?? CIRCULAR_COLORS[0],
+          }}
+        >
+          {letter}
+        </motion.span>
+      ))}
+      <span className="sr-only">{CIRCULAR_FULL_TEXT}</span>
     </motion.div>
+  );
+}
+
+// ─── BounceLoader ─────────────────────────────────────────────────────────────
+
+function BounceLoader() {
+  return (
+    <div className="flex items-center justify-center space-x-2">
+      <div
+        className="h-2.5 w-2.5 animate-bounce rounded-full [animation-delay:-0.3s]"
+        style={{ backgroundColor: "hsl(var(--accent-orange))" }}
+      />
+      <div
+        className="h-2.5 w-2.5 animate-bounce rounded-full [animation-delay:-0.15s]"
+        style={{ backgroundColor: "hsl(var(--accent-orange))" }}
+      />
+      <div
+        className="h-2.5 w-2.5 animate-bounce rounded-full"
+        style={{ backgroundColor: "hsl(var(--accent-orange))" }}
+      />
+    </div>
   );
 }
 
@@ -184,13 +117,10 @@ export default function LoadingScreen({
   holdMs = 500,
 }: LoadingScreenProps) {
   const reduce = useReducedMotion();
-  const [progress, setProgress] = useState(0);
   const [open, setOpen] = useState(true);
 
   const holdTimerRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
-
-  const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
   useEffect(() => {
     return () => {
@@ -203,7 +133,6 @@ export default function LoadingScreen({
     if (!open) return;
 
     if (reduce) {
-      setProgress(100);
       holdTimerRef.current = window.setTimeout(() => setOpen(false), 60);
       return;
     }
@@ -213,9 +142,6 @@ export default function LoadingScreen({
     const tick = (now: number) => {
       const elapsed = now - start;
       const t = Math.min(1, elapsed / durationMs);
-      const eased = easeOutCubic(t);
-      setProgress(Math.round(eased * 100));
-
       if (t < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
@@ -231,11 +157,14 @@ export default function LoadingScreen({
     };
   }, [durationMs, holdMs, reduce, open]);
 
-  // Variants
+  // ── Variants ────────────────────────────────────────────────────────────────
   const overlayVariants: Variants = {
     initial: { opacity: 1 },
     animate: { opacity: 1 },
-    exit: { opacity: 0, transition: { duration: reduce ? 0.15 : 0.45, ease: "easeInOut" } },
+    exit: {
+      opacity: 0,
+      transition: { duration: reduce ? 0.15 : 0.45, ease: "easeInOut" },
+    },
   };
 
   const logoVariants: Variants = {
@@ -247,7 +176,7 @@ export default function LoadingScreen({
     },
   };
 
-  const progressVariants: Variants = {
+  const loaderVariants: Variants = {
     hidden: { opacity: 0, y: 10 },
     visible: {
       opacity: 1,
@@ -262,8 +191,6 @@ export default function LoadingScreen({
     exit: { opacity: 0, y: -8, transition: { duration: reduce ? 0.15 : 0.35 } },
   };
 
-  const percentText = String(progress).padStart(2, "0");
-
   return (
     <AnimatePresence onExitComplete={onComplete}>
       {open && (
@@ -277,7 +204,7 @@ export default function LoadingScreen({
           aria-label="Loading"
           data-cursor="hide"
         >
-          {/* Vignette soft */}
+          {/* Vignette */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black via-black/70 to-black" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/50" />
 
@@ -289,7 +216,7 @@ export default function LoadingScreen({
             animate="animate"
             exit="exit"
           >
-            {/* LOGO + CIRCULAR TEXT */}
+            {/* LOGO + SPINNING TEXT */}
             <motion.div
               className="relative flex items-center justify-center [transform:translateZ(0)]"
               style={{ width: 200, height: 200 }}
@@ -297,18 +224,12 @@ export default function LoadingScreen({
               initial="hidden"
               animate="visible"
             >
-              {/* Circular rotating text */}
               {!reduce && (
                 <div className="absolute inset-0">
-                  <CircularText
-                    text={CIRCULAR_FULL_TEXT}
-                    onHover="speedUp"
-                    spinDuration={20}
-                  />
+                  <SpinningText duration={20} radius={8.5} />
                 </div>
               )}
 
-              {/* Logo centrato */}
               <motion.img
                 src="/logo/favicon.png"
                 alt="Logo"
@@ -316,31 +237,14 @@ export default function LoadingScreen({
               />
             </motion.div>
 
-            {/* LINEA DI CARICAMENTO + % */}
+            {/* BOUNCE LOADER */}
             <motion.div
-              className="mt-14 flex items-baseline justify-center gap-3 sm:gap-4 flex-wrap"
-              variants={progressVariants}
+              className="mt-8"
+              variants={loaderVariants}
               initial="hidden"
               animate="visible"
             >
-              <span className="uppercase tracking-[0.30em] text-[0.8rem] sm:text-[0.88rem] text-white/85">
-                Start
-              </span>
-
-              <span className="uppercase tracking-[0.30em] text-[0.72rem] sm:text-[0.82rem] text-white/55 tabular-nums">
-                {percentText}%
-              </span>
-
-              <span className="relative -top-[2px] h-px w-14 sm:w-16 md:w-20 overflow-hidden">
-                <span className="absolute inset-0 bg-white/20" />
-                <span
-                  className="absolute inset-0 bg-[hsl(var(--scroll-indicator))]"
-                  style={{
-                    transform: `translateX(${progress >= 100 ? "0%" : "-100%"})`,
-                    transition: "transform 380ms ease",
-                  }}
-                />
-              </span>
+              <BounceLoader />
             </motion.div>
           </motion.div>
         </motion.div>

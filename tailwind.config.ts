@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
-import { LucideX } from "lucide-react";
+
 export default {
   darkMode: ["class"],
   content: [
@@ -19,9 +19,9 @@ export default {
     },
     extend: {
       fontFamily: {
-  sans: ['"URW Gothic"', 'sans-serif'],   // NUOVO FONT PRINCIPALE
-  display: ['"URW Gothic"', 'sans-serif'], 
-},
+        sans: ['"URW Gothic"', 'sans-serif'],
+        display: ['"URW Gothic"', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -74,20 +74,12 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -96,6 +88,5 @@ export default {
       },
     },
   },
-
-plugins: [tailwindcssAnimate],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

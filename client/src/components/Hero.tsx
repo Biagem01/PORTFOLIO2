@@ -1,212 +1,508 @@
-import { motion, useReducedMotion, useScroll, useTransform, MotionValue } from "framer-motion";
-import { useMemo, useState, useEffect } from "react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  useSpring,
+  AnimatePresence,
+} from "framer-motion";
+import { useRef, useEffect, useState, useCallback } from "react";
+import { HeroBadgesFocus, TwoWordFocus } from "./TrueFocus";
 
-type LineRevealProps = {
-  text: string;
-  delay?: number;
-  className?: string;
-  yScroll?: MotionValue<number>;
-  opacityScroll?: MotionValue<number>;
-  blurScroll?: MotionValue<string>;
-};
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const FRAME_COUNT = 216;
+const FRAME_PATH = (i: number) =>
+  `/sequence/ezgif-frame-${String(i).padStart(3, "0")}.webp`;
 
-function LineReveal({
-  text,
-  delay = 0,
-  className = "",
-  yScroll,
-  opacityScroll,
-  blurScroll,
-}: LineRevealProps) {
-  const reduce = useReducedMotion();
+// ─── BEATS B, C ───────────────────────────────────────────────────────────────
+const BEATS = [
+  {
+    id: "b",
+    start: 0.27,
+    peak:  0.35,
+    hold:  0.46,
+    end:   0.54,
+    align: "left" as const,
+    eyebrow: "Every detail considered",
+    line1: "ENGINEERED TO",
+    line2: "PERFORM",
+  },
+  {
+    id: "c",
+    start: 0.57,
+    peak:  0.64,
+    hold:  0.80,
+    end:   0.88,
+    align: "right" as const,
+    eyebrow: "React · TypeScript · Framer Motion",
+    line1: "BUILT WITH",
+    line2: "PURPOSE",
+  },
+];
+
+// ─── BeatText — con TwoWordFocus e font corretti ──────────────────────────────
+function BeatText({
+  beat,
+  scrollProgress,
+}: {
+  beat: (typeof BEATS)[0];
+  scrollProgress: ReturnType<typeof useSpring>;
+}) {
+  const h2Ref = useRef<HTMLHeadingElement>(null);
+
+  const opacity = useTransform(
+    scrollProgress,
+    [beat.start, beat.peak, beat.hold, beat.end],
+    [0, 1, 1, 0]
+  );
+  const y = useTransform(
+    scrollProgress,
+    [beat.start, beat.peak, beat.hold, beat.end],
+    [52, 0, 0, -28]
+  );
+  const blurVal = useTransform(
+    scrollProgress,
+    [beat.start, beat.peak, beat.hold, beat.end],
+    [12, 0, 0, 6]
+  );
+  const filter = useTransform(blurVal, (v) => `blur(${v}px)`);
+  const lineScale = useTransform(scrollProgress, [beat.start, beat.peak + 0.05], [0, 1]);
+
+  const isRight = beat.align === "right";
+  const containerAlign = isRight
+    ? "items-end pr-8 md:pr-16 lg:pr-24"
+    : "items-start pl-8 md:pl-16 lg:pl-24";
+
+  const FONT_SIZE = "clamp(2rem, 6vw, 5rem)";
 
   return (
-    <span className="block overflow-hidden perspective-1000">
-      <motion.span
-        className={`block will-change-transform ${className}`}
-        initial={
-          reduce
-            ? { opacity: 0 }
-            : { y: "100%", opacity: 0, rotateX: 45, filter: "blur(12px)" }
-        }
-        animate={
-          reduce
-            ? { opacity: 1 }
-            : { y: "0%", opacity: 1, rotateX: 0, filter: "blur(0px)" }
-        }
-        transition={{
-          duration: 1.2,
-          delay,
-          ease: [0.16, 1, 0.3, 1],
-        }}
-        style={{
-          y: yScroll,
-          opacity: opacityScroll,
-          filter: blurScroll,
-        }}
+    <motion.div
+      style={{ opacity, y, filter, position: "absolute", inset: 0, pointerEvents: "none", zIndex: 20 }}
+      className={`flex flex-col justify-center ${containerAlign}`}
+    >
+      {/* Eyebrow */}
+      <p
+        className="font-button text-[7px] uppercase tracking-[0.65em] mb-5"
+        style={{ color: "hsl(38 33% 57% / 0.35)" }}
       >
-        {text}
-      </motion.span>
-    </span>
+        {beat.eyebrow}
+      </p>
+
+      {/* Titolo con TwoWordFocus — font-white oro + font-orange arancione */}
+      <h2
+        ref={h2Ref}
+        className="relative leading-[0.88]"
+        style={{ fontSize: FONT_SIZE }}
+      >
+        <TwoWordFocus
+          word0={beat.line1}
+          word1={beat.line2}
+          fontSize={FONT_SIZE}
+          animationDuration={0.9}
+          focusPause={3500}
+          borderColor="rgb(235, 89, 57)"
+          glowColor="rgba(235, 89, 57, 0.55)"
+          blurAmount={4}
+          frameAnchorRef={h2Ref}
+        />
+      </h2>
+
+      {/* Accent line */}
+      <motion.div
+        style={{
+          scaleX: lineScale,
+          transformOrigin: isRight ? "right" : "left",
+          width: 40,
+          height: 1,
+          backgroundColor: "hsl(11 80% 57% / 0.6)",
+          marginTop: "1.25rem",
+          alignSelf: isRight ? "flex-end" : "flex-start",
+        }}
+      />
+    </motion.div>
   );
 }
 
-export default function Hero() {
-  const reduce = useReducedMotion();
-  const [showVideo, setShowVideo] = useState(false);
+// ─── Loading screen ───────────────────────────────────────────────────────────
+function LoadingScreen({ progress }: { progress: number }) {
+  return (
+    <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center">
+      <motion.div
+        initial={{ scaleY: 0, opacity: 0 }}
+        animate={{ scaleY: 1, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          width: 1, height: 56,
+          backgroundColor: "hsl(11 80% 57% / 0.5)",
+          marginBottom: "2rem",
+          transformOrigin: "top",
+        }}
+      />
+      <p
+        className="font-button text-[7px] uppercase tracking-[0.7em] mb-8"
+        style={{ color: "hsl(38 33% 57% / 0.3)" }}
+      >
+        biagio cubisino
+      </p>
+      <div style={{ width: 140, height: 1, backgroundColor: "hsl(38 33% 57% / 0.07)", position: "relative", overflow: "hidden" }}>
+        <motion.div
+          style={{
+            position: "absolute", top: 0, left: 0,
+            height: "100%",
+            backgroundColor: "hsl(11 80% 57%)",
+            width: `${progress}%`,
+            transition: "width 0.12s linear",
+          }}
+        />
+      </div>
+      <p
+        className="font-button text-[6px] uppercase tracking-[0.5em] tabular-nums mt-4"
+        style={{ color: "hsl(38 33% 57% / 0.18)" }}
+      >
+        {Math.round(progress)}%
+      </p>
+    </div>
+  );
+}
 
-  const delays = useMemo(() => {
-    const base = 0.35;
-    const step = 0.18;
-    return {
-      name: 0.18,
-      l1: base + step * 0,
-      l2: base + step * 1,
-      l3: base + step * 2,
-      l4: base + step * 3,
-      l5: base + step * 4,
-      sub: base + step * 4 + 0.25,
-    };
-  }, []);
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+export default function Hero() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const h1Ref      = useRef<HTMLHeadingElement>(null);
+  const rafRef     = useRef<number | null>(null);
+  useReducedMotion();
+
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [loaded, setLoaded]             = useState(false);
+  const [showScroll, setShowScroll]     = useState(true);
+
+  // Tiene traccia se il sito è appena stato aperto (per animazione entrata)
+  const [hasEntered, setHasEntered] = useState(false);
+
+  const { scrollYProgress } = useScroll({
+    target: wrapperRef,
+    offset: ["start start", "end end"],
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 90,
+    damping: 28,
+    restDelta: 0.00005,
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowVideo(true), 800);
-    return () => clearTimeout(timer);
+    return smoothProgress.on("change", (v) => setShowScroll(v <= 0.05));
+  }, [smoothProgress]);
+
+  // ── Preload WebP
+  useEffect(() => {
+    const images: HTMLImageElement[] = new Array(FRAME_COUNT).fill(null);
+    let completed = 0;
+    const checkDone = () => {
+      completed++;
+      setLoadProgress(Math.round((completed / FRAME_COUNT) * 100));
+      if (completed === FRAME_COUNT) {
+        imagesRef.current = images;
+        setLoaded(true);
+        // Piccolo delay per far finire l'animazione di uscita del loading screen
+        setTimeout(() => setHasEntered(true), 700);
+      }
+    };
+    for (let i = 1; i <= FRAME_COUNT; i++) {
+      const img = new Image();
+      const idx = i - 1;
+      img.onload  = () => { images[idx] = img; checkDone(); };
+      img.onerror = () => { console.warn(`Frame missing: ${FRAME_PATH(i)}`); checkDone(); };
+      img.src = FRAME_PATH(i);
+    }
   }, []);
 
-  const { scrollY } = useScroll();
+  // ── Draw frame
+  const drawFrame = useCallback((index: number) => {
+    const canvas = canvasRef.current;
+    const img    = imagesRef.current[index];
+    if (!canvas || !img || !img.complete || img.naturalWidth === 0) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const iw = img.naturalWidth  || 1920;
+    const ih = img.naturalHeight || 1080;
+    const isMobile = cw < 768;
+    const scale    = isMobile ? (cw / iw) * 1.8 : Math.min(cw / iw, ch / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = (cw - dw) / 2;
+    const dy = (ch - dh) / 2;
+    try {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.drawImage(img, dx, dy, dw, dh);
+    } catch (_) {
+      // frame broken, skip silently
+    }
+  }, []);
 
-  // Video parallasse
-  const videoY = useTransform(scrollY, [0, 500], [0, 50]);
-  const videoScale = useTransform(scrollY, [0, 500], [1, 1.05]);
-  const videoOpacity = useTransform(scrollY, [0, 500], [1, 0.85]);
+  // ── Resize
+  useEffect(() => {
+    const resize = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      if (imagesRef.current.length > 0) drawFrame(0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, [drawFrame]);
 
-  // Scroll offset: l'animazione inizia dopo che scrolli almeno 300px
-const scrollStart = 100;
-const scrollEnd = scrollStart + 1000; // range dell'animazione
+  // ── Scroll → frame via rAF
+  useEffect(() => {
+    if (!loaded) return;
+    return smoothProgress.on("change", (v) => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        const mapped = Math.min(v / 0.88, 1.0);
+        const idx    = Math.min(FRAME_COUNT - 1, Math.max(0, Math.floor(mapped * FRAME_COUNT)));
+        drawFrame(idx);
+      });
+    });
+  }, [loaded, smoothProgress, drawFrame]);
 
-const yTransforms = [
-  useTransform(scrollY, [scrollStart, scrollEnd], [0, -150]),
-  useTransform(scrollY, [scrollStart, scrollEnd], [0, -160]),
-  useTransform(scrollY, [scrollStart, scrollEnd], [0, -170]),
-  useTransform(scrollY, [scrollStart, scrollEnd], [0, -180]),
-  useTransform(scrollY, [scrollStart, scrollEnd], [0, -190]),
-];
+  // ── Primo frame
+  useEffect(() => {
+    if (!loaded) return;
+    requestAnimationFrame(() => {
+      const canvas = canvasRef.current;
+      if (canvas && canvas.width === 0) {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      drawFrame(0);
+    });
+  }, [loaded, drawFrame]);
 
-const opacityTransforms = [
-  useTransform(scrollY, [scrollStart, scrollStart + 600], [1, 0.6]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], [1, 0.55]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], [1, 0.5]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], [1, 0.45]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], [1, 0.4]),
-];
+  // ── Beat A transforms
+  // opacity: parte da 1 (visibile subito), scompare tra 0.18 e 0.27
+  const beatAOpacity = useTransform(
+    smoothProgress,
+    [0.0, 0.18, 0.27],
+    [1,   1,    0]
+  );
+  const beatAY = useTransform(
+    smoothProgress,
+    [0.0, 0.18, 0.27],
+    [0,   0,    -28]
+  );
+  const beatABlur = useTransform(
+    smoothProgress,
+    [0.0, 0.18, 0.27],
+    [0,   0,    8]
+  );
+  const beatAFilter = useTransform(beatABlur, (v) => `blur(${v}px)`);
 
-const blurTransforms = [
-  useTransform(scrollY, [scrollStart, scrollStart + 600], ["blur(0px)", "blur(10px)"]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], ["blur(0px)", "blur(12px)"]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], ["blur(0px)", "blur(14px)"]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], ["blur(0px)", "blur(16px)"]),
-  useTransform(scrollY, [scrollStart, scrollStart + 600], ["blur(0px)", "blur(18px)"]),
-];
+  // Divider scale — appare subito con animazione entrata
+  const dividerScale = useTransform(smoothProgress, [0.0, 0.18, 0.27], [1, 1, 0]);
+
+  // Fade to black verso About
+  const fadeToBlack = useTransform(smoothProgress, [0.84, 1.0], [0, 1]);
+
   return (
-    <section
-      id="hero"
-      className="relative min-h-[100svh] flex items-center justify-center px-4 sm:px-6 md:px-10 lg:px-12 pt-[max(5rem,env(safe-area-inset-top))] pb-[max(4.5rem,env(safe-area-inset-bottom))] overflow-hidden isolate"
-    >
-      {/* ================= VIDEO BACKGROUND ================= */}
-      <motion.div
-        className="absolute inset-0 -z-10"
-        style={{ y: videoY, scale: videoScale, opacity: videoOpacity }}
-      >
-        <video
-          className={`w-full h-full object-cover transition-opacity duration-1000 ${
-            showVideo ? "opacity-100" : "opacity-0"
-          }`}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        >
-          <source src="/videos/uomo-deserto.webm" type="video/mp4" />
-        </video>
+    <>
+      <AnimatePresence>
+        {!loaded && (
+          <motion.div
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.0, ease: "easeInOut" }}
+          >
+            <LoadingScreen progress={loadProgress} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        <div className="absolute inset-0 bg-black/55" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80" />
-      </motion.div>
-
-      {/* ================= HERO TEXT ================= */}
-      <motion.div
-        initial={reduce ? { opacity: 1 } : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-[64rem] mx-auto text-center relative z-10 will-change-transform"
-      >
-        <motion.p
-          className="uppercase text-[0.68rem] sm:text-[0.75rem] md:text-[0.85rem] tracking-[0.28em] sm:tracking-[0.35em] text-foreground/60 mb-6 sm:mb-8 font-orange"
-          initial={reduce ? { opacity: 1 } : { opacity: 0, y: 14, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1.0, delay: delays.name, ease: [0.16, 1, 0.3, 1] }}
+      <div ref={wrapperRef} style={{ height: "420vh", position: "relative" }}>
+        <div
+          style={{
+            position: "sticky", top: 0,
+            height: "100vh", width: "100%",
+            overflow: "hidden",
+            backgroundColor: "#000000",
+          }}
         >
-          biagio cubisino
-        </motion.p>
+          <canvas
+            ref={canvasRef}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+          />
 
-        <h1
-          className="select-none text-center font-extrabold tracking-tight [text-wrap:balance] break-words leading-[1.02] sm:leading-[0.98] lg:leading-[0.95] text-[clamp(2.1rem,10vw,6.2rem)]"
-          data-cursor="big"
-        >
-          <LineReveal
-            text="CRAFTING"
-            delay={delays.l1}
-            className="text-[hsl(var(--scroll-indicator))] font-white"
-            yScroll={yTransforms[0]}
-            opacityScroll={opacityTransforms[0]}
-            blurScroll={blurTransforms[0]}
+          {/* Vignetta radiale */}
+          <div
+            style={{
+              position: "absolute", inset: 0,
+              background: `radial-gradient(ellipse 78% 78% at 50% 50%,
+                transparent 48%,
+                rgba(0,0,0,0.45) 70%,
+                rgba(0,0,0,0.90) 100%)`,
+              pointerEvents: "none", zIndex: 5,
+            }}
           />
-          <LineReveal
-            text="MODERN"
-            delay={delays.l2}
-            className="text-[hsl(var(--accent-orange))] font-orange"
-            yScroll={yTransforms[1]}
-            opacityScroll={opacityTransforms[1]}
-            blurScroll={blurTransforms[1]}
-          />
-          <LineReveal
-            text="DIGITAL"
-            delay={delays.l3}
-            className="text-[hsl(var(--scroll-indicator))] font-white"
-            yScroll={yTransforms[2]}
-            opacityScroll={opacityTransforms[2]}
-            blurScroll={blurTransforms[2]}
-          />
-          <LineReveal
-            text="EXPERIENCES"
-            delay={delays.l4}
-            className="text-[hsl(var(--accent-orange))] font-orange"
-            yScroll={yTransforms[3]}
-            opacityScroll={opacityTransforms[3]}
-            blurScroll={blurTransforms[3]}
-          />
-          <LineReveal
-            text="DAILY"
-            delay={delays.l5}
-            className="text-[hsl(var(--scroll-indicator))]"
-            yScroll={yTransforms[4]}
-            opacityScroll={opacityTransforms[4]}
-            blurScroll={blurTransforms[4]}
-          />
-        </h1>
 
-        <motion.p
-          className="mt-7 sm:mt-10 mx-auto max-w-[40rem] font-light leading-relaxed text-center text-[hsl(var(--scroll-indicator))] text-[clamp(0.98rem,3.4vw,1.35rem)]"
-          data-cursor="big"
-          initial={reduce ? { opacity: 1 } : { opacity: 0, y: 16, filter: "blur(12px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1.1, delay: delays.sub, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* tua frase */}
-        </motion.p>
-      </motion.div>
-    </section>
+          {/* Gradient bottom seamless */}
+          <div
+            style={{
+              position: "absolute", bottom: 0, left: 0, right: 0,
+              height: "55%",
+              background: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.75) 55%, #000000 100%)",
+              pointerEvents: "none", zIndex: 6,
+            }}
+          />
+
+          {/* Fade out verso About */}
+          <motion.div
+            style={{
+              position: "absolute", inset: 0,
+              backgroundColor: "#000000",
+              opacity: fadeToBlack,
+              pointerEvents: "none", zIndex: 7,
+            }}
+          />
+
+          {/* ── Beat A — visibile subito al caricamento ── */}
+          <motion.div
+            style={{
+              opacity: beatAOpacity,
+              y: beatAY,
+              filter: beatAFilter,
+              position: "absolute", inset: 0,
+              pointerEvents: "none", zIndex: 20,
+            }}
+            className="flex flex-col items-center justify-center text-center"
+          >
+            {/* Eyebrow — entra dall'alto dopo il loading */}
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={hasEntered ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="font-button text-[7px] uppercase tracking-[0.7em] mb-7"
+              style={{ color: "hsl(38 33% 57% / 0.35)" }}
+            >
+              biagio cubisino — portfolio
+            </motion.p>
+
+            {/* H1 — entra dal basso */}
+            <motion.div
+              initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+              animate={hasEntered
+                ? { opacity: 1, y: 0, filter: "blur(0px)" }
+                : { opacity: 0, y: 20, filter: "blur(10px)" }
+              }
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            >
+              <h1
+                ref={h1Ref}
+                className="relative font-extrabold leading-[1] tracking-tight"
+                style={{ fontSize: "clamp(2.4rem, 8.5vw, 6.5rem)" }}
+              >
+                <HeroBadgesFocus
+                  word0="CRAFTING"
+                  word1="MINIMAL"
+                  word2="DIGITAL"
+                  word3="PRODUCTS"
+                  fontSize="clamp(2.4rem, 8.5vw, 6.5rem)"
+                  animationDuration={0.9}
+                  focusPause={3500}
+                  borderColor="rgb(235, 89, 57)"
+                  glowColor="rgba(235, 89, 57, 0.55)"
+                  blurAmount={4}
+                  frameAnchorRef={h1Ref}
+                />
+              </h1>
+            </motion.div>
+
+            {/* Divider */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={hasEntered ? { scaleX: 1 } : { scaleX: 0 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+              style={{
+                transformOrigin: "center",
+                width: 36, height: 1,
+                backgroundColor: "hsl(11 80% 57% / 0.6)",
+                margin: "1.5rem auto",
+              }}
+            />
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={hasEntered ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+              className="font-button text-[7px] uppercase tracking-[0.5em]"
+              style={{ color: "hsl(38 33% 57% / 0.35)" }}
+            >
+              Full Stack Developer & Visual Director
+            </motion.p>
+          </motion.div>
+
+          {/* ── Beats B, C ── */}
+          {BEATS.map((beat) => (
+            <BeatText key={beat.id} beat={beat} scrollProgress={smoothProgress} />
+          ))}
+
+          {/* ── Scroll indicator ── */}
+          <AnimatePresence>
+            {showScroll && loaded && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: 1.0 }}
+                style={{
+                  position: "absolute",
+                  bottom: "3rem",
+                  left: 0, right: 0,
+                  margin: "0 auto",
+                  width: "fit-content",
+                  zIndex: 30,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 10,
+                  pointerEvents: "none",
+                }}
+              >
+                <p
+                  className="font-button text-[6px] uppercase tracking-[0.7em]"
+                  style={{ color: "hsl(38 33% 57% / 0.2)" }}
+                >
+                  Scroll
+                </p>
+                <motion.div
+                  animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 0.7, 0.3] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ width: 1, height: 44, backgroundColor: "hsl(11 80% 57%)", transformOrigin: "top" }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Progress bar */}
+          <motion.div
+            style={{
+              position: "absolute", bottom: 0, left: 0,
+              height: 1,
+              backgroundColor: "hsl(11 80% 57% / 0.4)",
+              scaleX: smoothProgress,
+              transformOrigin: "left",
+              zIndex: 30, width: "100%",
+            }}
+          />
+        </div>
+      </div>
+    </>
   );
 }

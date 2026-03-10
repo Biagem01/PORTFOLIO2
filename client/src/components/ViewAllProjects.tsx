@@ -1,81 +1,46 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import styled from "styled-components";
+import { cn } from "@/lib/utils";
+import { InlineTrueFocus } from "./TrueFocus";
 
-const StyledWrapper = styled.div`
-  .cssbuttons-io-button {
-    background: hsl(11, 80%, 57%);
-    color: #000;
-    font-family: 'JetBrains Mono', monospace;
-    padding: 0.35em;
-    padding-left: 1.2em;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    border-radius: 0.9em;
-    border: none;
-    display: flex;
-    align-items: center;
-    box-shadow: inset 0 0 1.6em -0.6em hsl(11, 80%, 35%);
-    overflow: hidden;
-    position: relative;
-    height: 2.8em;
-    padding-right: 3.3em;
-    cursor: pointer;
-    transition: background 0.4s, color 0.4s, box-shadow 0.4s;
-  }
+interface NeuBrutalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+  className?: string;
+}
 
-  .cssbuttons-io-button:hover {
-    background: #000;
-    color: #000;
-    box-shadow: 0 0 24px hsl(11, 80%, 57%, 0.25);
-  }
-
-  /* Quadrato — nero a riposo */
-  .cssbuttons-io-button .icon {
-    background: #000;
-    margin-left: 1em;
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 2.2em;
-    width: 2.2em;
-    border-radius: 0.7em;
-    box-shadow: 0.1em 0.1em 0.6em 0.2em hsl(11, 80%, 25%);
-    right: 0.3em;
-    transition: all 0.3s;
-  }
-
-  /* Quadrato — nero anche all'hover, si espande */
-  .cssbuttons-io-button:hover .icon {
-    width: calc(100% - 0.6em);
-    background: #000;
-  }
-
-  /* Freccia — arancione a riposo */
-  .cssbuttons-io-button .icon svg {
-    width: 1.1em;
-    transition: transform 0.3s;
-    color: hsl(11, 80%, 57%);
-  }
-
-  /* Freccia — arancione anche all'hover */
-  .cssbuttons-io-button:hover .icon svg {
-    transform: translateX(0.1em);
-    color: hsl(11, 80%, 57%);
-  }
-
-  .cssbuttons-io-button:active .icon {
-    transform: scale(0.95);
-  }
-`;
+function NeuBrutalButton({ children, className, ...props }: NeuBrutalButtonProps) {
+  return (
+    <button
+      {...props}
+      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+      className={cn(
+        "group/button rounded-[0.75em]",
+        "bg-[hsl(38,28%,57%)]",
+        className
+      )}
+    >
+      <span
+        className={cn(
+          "block rounded-[0.75em]",
+          "border-2 border-[hsl(38,28%,45%)]",
+          "bg-[hsl(11,80%,57%)]",
+          "px-10 py-4",
+          "text-sm font-bold tracking-[0.12em] uppercase text-black",
+          "-translate-x-[3px] -translate-y-[3px]",
+          "transition-transform duration-150 ease-out",
+          "group-hover/button:-translate-x-[5px] group-hover/button:-translate-y-[5px]",
+          "group-active/button:translate-x-0 group-active/button:translate-y-0"
+        )}
+      >
+        {children}
+      </span>
+    </button>
+  );
+}
 
 export default function ViewAllProjects() {
   return (
     <section className="relative bg-black overflow-hidden py-32">
-
       <motion.div
         className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/10 via-transparent to-transparent"
         initial={{ opacity: 0, x: -150 }}
@@ -85,7 +50,6 @@ export default function ViewAllProjects() {
       />
 
       <div className="max-w-5xl mx-auto px-6 flex flex-col items-center text-center relative z-10">
-
         <motion.p
           data-cursor="big"
           className="text-sm uppercase tracking-[0.3em] text-foreground/50"
@@ -98,23 +62,22 @@ export default function ViewAllProjects() {
 
         <motion.h3
           data-cursor="big"
-          className="text-5xl md:text-7xl tracking-tight leading-[1.05] mt-6 text-[hsl(var(--scroll-indicator))] font-extrabold"
+          className="relative text-[2.55rem] md:text-[3.57rem] tracking-tight leading-[1.3] mt-6"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         >
-          VUOI{" "}
-          <span className="text-[hsl(var(--accent-orange))] font-orange">VEDERE</span>
-          <motion.span
-            className="block"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            TUTTI I{" "}
-            <span className="text-[hsl(var(--accent-orange))] font-orange">PROGETTI</span>
-            ?
-          </motion.span>
+          <InlineTrueFocus
+            words={["VUOI", "VEDERE", "TUTTI I", "PROGETTI"]}
+            lineBreakAfter={1}
+            fontSize="inherit"
+            animationDuration={0.9}
+            focusPause={3500}
+            borderColor="rgb(235, 89, 57)"
+            glowColor="rgba(235, 89, 57, 0.55)"
+            blurAmount={4}
+          />
+          <span className="font-white" style={{ color: 'hsl(38 28% 57%)' }}>?</span>
         </motion.h3>
 
         <motion.p
@@ -147,20 +110,9 @@ export default function ViewAllProjects() {
               }
             }}
           >
-            <StyledWrapper>
-              <button className="cssbuttons-io-button">
-                VEDI TUTTI I PROGETTI
-                <div className="icon">
-                  <svg height={24} width={24} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </div>
-              </button>
-            </StyledWrapper>
+            <NeuBrutalButton>
+              VEDI TUTTI I PROGETTI
+            </NeuBrutalButton>
           </Link>
 
           <motion.div
@@ -170,7 +122,6 @@ export default function ViewAllProjects() {
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           />
         </motion.div>
-
       </div>
     </section>
   );

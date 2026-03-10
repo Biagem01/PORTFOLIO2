@@ -8,8 +8,8 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { useEffect, useState, useRef, useMemo } from "react";
+import { TwoWordFocus } from "./TrueFocus";
 
-// ─── Custom Types ─────────────────────────────────────────────────────────────
 interface EducationItem {
   institution: string;
   year: string;
@@ -26,21 +26,17 @@ interface SlideProps {
   progress: MotionValue<number>;
 }
 
-// ─── Hook per rilevare mobile ─────────────────────────────────────────────────
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
   return isMobile;
 };
 
-// ─── Animated Year ────────────────────────────────────────────────────────────
 const AnimatedYear = ({ year, isVisible }: { year: string; isVisible: boolean }) => {
   const [displayed, setDisplayed] = useState("0000");
   const hasAnimated = useRef(false);
@@ -48,9 +44,7 @@ const AnimatedYear = ({ year, isVisible }: { year: string; isVisible: boolean })
 
   useEffect(() => {
     if (isVisible) {
-      // Cancella eventuale reset in corso
       if (resetTimer.current) clearTimeout(resetTimer.current);
-
       if (!hasAnimated.current) {
         hasAnimated.current = true;
         const target = parseInt(year, 10);
@@ -68,17 +62,12 @@ const AnimatedYear = ({ year, isVisible }: { year: string; isVisible: boolean })
         requestAnimationFrame(tick);
       }
     } else {
-      // 🔥 FIX: reset hasAnimated con delay dopo che la slide è uscita
-      // così la prossima volta che torna visibile ripartirà l'animazione
       resetTimer.current = setTimeout(() => {
         hasAnimated.current = false;
         setDisplayed("0000");
       }, 800);
     }
-
-    return () => {
-      if (resetTimer.current) clearTimeout(resetTimer.current);
-    };
+    return () => { if (resetTimer.current) clearTimeout(resetTimer.current); };
   }, [isVisible, year]);
 
   return (
@@ -96,26 +85,23 @@ const AnimatedYear = ({ year, isVisible }: { year: string; isVisible: boolean })
   );
 };
 
-// ─── Alternating colored title ────────────────────────────────────────────────
 const AlternatingTitle = ({ text }: { text: string }) => {
   const words = text.split(" ");
-  const colors = [
-    "text-[hsl(var(--accent-orange))]",
-    "text-[hsl(var(--scroll-indicator))]",
+  const fontClasses = [
+    "font-orange text-[hsl(var(--accent-orange))]",
+    "font-white text-[hsl(var(--scroll-indicator))] text-[0.85em]",
   ];
   return (
     <>
       {words.map((word, i) => (
-        <span key={i} className={colors[i % 2]}>
-          {word}
-          {i < words.length - 1 ? " " : ""}
+        <span key={i} className={fontClasses[i % 2]}>
+          {word}{i < words.length - 1 ? " " : ""}
         </span>
       ))}
     </>
   );
 };
 
-// ─── Staggered detail ─────────────────────────────────────────────────────────
 const StaggeredDetail = ({ detail, index, isVisible }: { detail: string; index: number; isVisible: boolean }) => (
   <motion.li
     initial={{ opacity: 0, y: 10 }}
@@ -128,7 +114,6 @@ const StaggeredDetail = ({ detail, index, isVisible }: { detail: string; index: 
   </motion.li>
 );
 
-// ─── Ambient glow ─────────────────────────────────────────────────────────────
 const AmbientGlow = ({ progress, total }: { progress: MotionValue<number>; total: number }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   useEffect(() => {
@@ -154,10 +139,8 @@ const AmbientGlow = ({ progress, total }: { progress: MotionValue<number>; total
   );
 };
 
-// ─── Watermark year ───────────────────────────────────────────────────────────
 const WatermarkYear = ({ items, progress }: { items: EducationItem[]; progress: MotionValue<number> }) => {
   const [activeYear, setActiveYear] = useState(items[0].year);
-
   useEffect(() => {
     return progress.on("change", (v) => {
       const idx = Math.min(Math.floor(v * items.length), items.length - 1);
@@ -183,7 +166,6 @@ const WatermarkYear = ({ items, progress }: { items: EducationItem[]; progress: 
   );
 };
 
-// ─── Pip indicator ────────────────────────────────────────────────────────────
 const PipIndicator = ({ items, activeIndex }: { items: EducationItem[]; activeIndex: number }) => (
   <div className="flex flex-row md:flex-col gap-4 items-center">
     {items.map((_, i) => (
@@ -192,29 +174,22 @@ const PipIndicator = ({ items, activeIndex }: { items: EducationItem[]; activeIn
           animate={{
             scale: i === activeIndex ? 1.5 : 1,
             opacity: i === activeIndex ? 1 : 0.3,
-            backgroundColor: i === activeIndex
-              ? "hsl(var(--accent-orange))"
-              : "rgba(255,255,255,0.4)",
+            backgroundColor: i === activeIndex ? "hsl(var(--accent-orange))" : "rgba(255,255,255,0.4)",
           }}
           className="w-1.5 h-1.5 rounded-full"
         />
         {i === activeIndex && (
-          <motion.div
-            layoutId="pip-glow"
-            className="absolute inset-0 w-4 h-4 rounded-full bg-[hsl(var(--accent-orange))]/20 blur-sm -z-10"
-          />
+          <motion.div layoutId="pip-glow" className="absolute inset-0 w-4 h-4 rounded-full bg-[hsl(var(--accent-orange))]/20 blur-sm -z-10" />
         )}
       </div>
     ))}
   </div>
 );
 
-// ─── Left panel — Desktop only ────────────────────────────────────────────────
+// ─── LeftPanel ────────────────────────────────────────────────────────────────
+// Titolo: "the" (fisso) + TwoWordFocus alterna LEARNING ↔ PATH
 const LeftPanel = ({
-  items,
-  progress,
-  titleY,
-  titleOpacity,
+  items, progress, titleY, titleOpacity,
 }: {
   items: EducationItem[];
   progress: MotionValue<number>;
@@ -222,6 +197,7 @@ const LeftPanel = ({
   titleOpacity: MotionValue<number>;
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const h2Ref = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     return progress.on("change", (v) => setActiveIndex(Math.min(Math.floor(v * items.length), items.length - 1)));
@@ -235,12 +211,23 @@ const LeftPanel = ({
           <div className="text-[10px] font-mono tracking-[0.4em] text-white/30 uppercase">Selected Education</div>
         </div>
 
-        <h2 className="text-6xl font-serif leading-[0.9] tracking-tight" data-cursor="big">
-          <span className="text-white/40 italic">the</span>
-          <br />
-          <span className="text-[hsl(var(--accent-orange))] font-orange font-extrabold">Learning</span>
-          <br />
-          <span className="text-[hsl(var(--scroll-indicator))] font-extrabold">Path</span>
+        <h2
+          ref={h2Ref}
+          className="relative text-6xl leading-[1] tracking-tight flex flex-col items-start gap-0"
+          data-cursor="big"
+        >
+          <span className="text-white/40 italic font-serif px-[14px]">the</span>
+          <TwoWordFocus
+            word0="LEARNING"
+            word1="PATH"
+            fontSize="clamp(2.5rem, 5vw, 3.75rem)"
+            animationDuration={0.9}
+            focusPause={3000}
+            borderColor="rgb(235, 89, 57)"
+            glowColor="rgba(235, 89, 57, 0.55)"
+            blurAmount={4}
+            frameAnchorRef={h2Ref}
+          />
         </h2>
 
         <div className="flex flex-col gap-6 max-w-xs">
@@ -272,15 +259,10 @@ const LeftPanel = ({
   );
 };
 
-// ─── Mobile header ────────────────────────────────────────────────────────────
-const MobileHeader = ({
-  items,
-  progress,
-}: {
-  items: EducationItem[];
-  progress: MotionValue<number>;
-}) => {
+// ─── MobileHeader ─────────────────────────────────────────────────────────────
+const MobileHeader = ({ items, progress }: { items: EducationItem[]; progress: MotionValue<number> }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const h2Ref = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     return progress.on("change", (v) => setActiveIndex(Math.min(Math.floor(v * items.length), items.length - 1)));
@@ -291,8 +273,22 @@ const MobileHeader = ({
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <div className="text-[9px] font-mono tracking-[0.4em] text-white/30 uppercase">02 / Education</div>
-          <h2 className="text-3xl font-serif font-medium tracking-tight">
-            Learning <span className="text-[hsl(var(--accent-orange))] italic">Path</span>
+          <h2
+            ref={h2Ref}
+            className="relative text-3xl font-medium tracking-tight flex flex-col items-start"
+          >
+            <span className="text-white/40 italic font-serif px-[14px]">the</span>
+            <TwoWordFocus
+              word0="LEARNING"
+              word1="PATH"
+              fontSize="1.875rem"
+              animationDuration={0.9}
+              focusPause={3000}
+              borderColor="rgb(235, 89, 57)"
+              glowColor="rgba(235, 89, 57, 0.55)"
+              blurAmount={4}
+              frameAnchorRef={h2Ref}
+            />
           </h2>
         </div>
         <PipIndicator items={items} activeIndex={activeIndex} />
@@ -301,7 +297,6 @@ const MobileHeader = ({
   );
 };
 
-// ─── Slide ────────────────────────────────────────────────────────────────────
 const EducationSlide = ({ item, index, total, progress }: SlideProps) => {
   const start = index / total;
   const end = (index + 1) / total;
@@ -317,10 +312,9 @@ const EducationSlide = ({ item, index, total, progress }: SlideProps) => {
   const y         = useTransform(progress, [start, end], [60, -60]);
   const blur      = useTransform(progress, [start - 0.1, start, end - 0.1, end], [20, 0, 0, 20]);
   const blurStyle = useMotionTemplate`blur(${blur}px)`;
-
-  const contentY = useTransform(progress, [start, start + 0.15], [40, 0]);
-  const lineW    = useTransform(progress, [start + 0.05, start + 0.2], ["0%", "100%"]);
-  const parallax = useTransform(progress, [start, end], [20, -20]);
+  const contentY  = useTransform(progress, [start, start + 0.15], [40, 0]);
+  const lineW     = useTransform(progress, [start + 0.05, start + 0.2], ["0%", "100%"]);
+  const parallax  = useTransform(progress, [start, end], [20, -20]);
 
   return (
     <motion.div
@@ -353,24 +347,17 @@ const EducationSlide = ({ item, index, total, progress }: SlideProps) => {
 
           <motion.div style={{ y: contentY }} className="space-y-8">
             <div className="space-y-4">
-              <motion.h3 className="text-4xl md:text-6xl font-orange tracking-tight leading-[0.95]" data-cursor="big">
+              <motion.h3 className="text-4xl md:text-6xl tracking-tight leading-[0.95]" data-cursor="big">
                 <AlternatingTitle text={item.institution} />
               </motion.h3>
               <div className="flex items-center gap-6">
                 <div className="h-px flex-1 bg-white/10 relative overflow-hidden">
-                  <motion.div
-                    style={{ width: lineW }}
-                    className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--accent-orange))] to-white/20"
-                  />
+                  <motion.div style={{ width: lineW }} className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--accent-orange))] to-white/20" />
                 </div>
                 <span className="text-sm md:text-lg font-serif italic text-white/80">{item.title}</span>
               </div>
             </div>
-
-            <p className="text-white/50 text-sm leading-relaxed max-w-xl font-button">
-              "{item.description}"
-            </p>
-
+            <p className="text-white/50 text-sm leading-relaxed max-w-xl font-button">"{item.description}"</p>
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12 pt-4" data-cursor="hide">
               {item.details.map((d, i) => (
                 <StaggeredDetail key={d} detail={d} index={i} isVisible={isVisible} />
@@ -383,7 +370,6 @@ const EducationSlide = ({ item, index, total, progress }: SlideProps) => {
   );
 };
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
 export const Education = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -417,7 +403,6 @@ export const Education = () => {
 
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 25, mass: 1 });
-
   const titleY       = useTransform(smoothProgress, [0, 1], [0, -40]);
   const titleOpacity = useTransform(smoothProgress, [0, 0.05, 0.95, 1], [0, 1, 1, 0]);
 
@@ -437,28 +422,16 @@ export const Education = () => {
       style={{ height: `${educationItems.length * (isMobile ? 150 : 200)}vh` }}
     >
       <div className="sticky top-0 h-screen overflow-hidden bg-black">
-
         <WatermarkYear items={educationItems} progress={smoothProgress} />
         <AmbientGlow progress={smoothProgress} total={educationItems.length} />
 
         <div className="relative h-full w-full md:grid md:grid-cols-12 z-10">
           <MobileHeader items={educationItems} progress={smoothProgress} />
-          <LeftPanel
-            items={educationItems}
-            progress={smoothProgress}
-            titleY={titleY}
-            titleOpacity={titleOpacity}
-          />
+          <LeftPanel items={educationItems} progress={smoothProgress} titleY={titleY} titleOpacity={titleOpacity} />
           <div className="col-span-8 relative h-full">
             <div className="absolute inset-0 flex items-center justify-center">
               {educationItems.map((item, index) => (
-                <EducationSlide
-                  key={item.institution}
-                  item={item}
-                  index={index}
-                  total={educationItems.length}
-                  progress={smoothProgress}
-                />
+                <EducationSlide key={item.institution} item={item} index={index} total={educationItems.length} progress={smoothProgress} />
               ))}
             </div>
           </div>
@@ -467,14 +440,10 @@ export const Education = () => {
         <div className="absolute bottom-10 left-10 right-10 flex items-center gap-6 z-20">
           <div className="text-[10px] font-mono text-white/20 tabular-nums">01</div>
           <div className="h-px flex-1 bg-white/5 relative overflow-hidden">
-            <motion.div
-              style={{ scaleX: smoothProgress, originX: 0 }}
-              className="absolute inset-0 bg-[hsl(var(--accent-orange))]"
-            />
+            <motion.div style={{ scaleX: smoothProgress, originX: 0 }} className="absolute inset-0 bg-[hsl(var(--accent-orange))]" />
           </div>
           <div className="text-[10px] font-mono text-white/20 tabular-nums">0{educationItems.length}</div>
         </div>
-
       </div>
     </section>
   );
